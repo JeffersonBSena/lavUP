@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - {{ APP_NAME }}{% endblock %}
+
+{% block content_full %}
+<div class="login-wrapper">
+  <div class="card login-card">
+    <div class="card-body">
+
+      <!-- Brand -->
+      <div class="text-center mb-4">
+        <div class="login-brand mb-2">
+          <img src="{% static 'img/logo.svg' %}" alt="{{ APP_NAME }}" height="60">
+        </div>
+        <p class="text-muted mb-0">Acesse com seu e-mail ou WhatsApp</p>
+      </div>
+
+      <!-- Alerts -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle-fill{% elif message.tags == 'warning' %}bi-exclamation-circle-fill{% elif message.tags == 'success' %}bi-check-circle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Form -->
+      <form method="post" id="loginForm">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label for="identificador" class="form-label fw-semibold">
+            <i class="bi bi-person me-1"></i> E-mail ou WhatsApp
+          </label>
+          <input
+            type="text"
+            class="form-control form-control-lg"
+            id="identificador"
+            name="identificador"
+            placeholder="email@exemplo.com ou (11) 99999-9999"
+            value="{{ identificador|default:'' }}"
+            autofocus
+            required
+            {% if bloqueado %}disabled{% endif %}
+          >
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary btn-lg w-100"
+          id="btnSubmit"
+          {% if bloqueado %}disabled{% endif %}
+        >
+          <i class="bi bi-send me-2"></i>
+          <span id="btnText">Enviar Código</span>
+        </button>
+      </form>
+
+      <!-- Temporizador de bloqueio -->
+      {% if bloqueado %}
+        <div class="text-center mt-3">
+          <span class="badge bg-danger timer-badge fs-6 px-3 py-2" id="timerBloqueio">
+            <i class="bi bi-lock-fill me-1"></i>
+            Bloqueado: <span id="tempoRestante">--:--</span>
+          </span>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Temporizador de bloqueio
+  {% if bloqueado and tempo_restante %}
+  (function() {
+    let segundos = {{ tempo_restante }};
+    const timerEl = document.getElementById('tempoRestante');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const inputField = document.getElementById('identificador');
+
+    function updateTimer() {
+      if (segundos <= 0) {
+        clearInterval(interval);
+        document.getElementById('timerBloqueio').classList.replace('bg-danger', 'bg-success');
+        timerEl.textContent = 'Desbloqueado!';
+        btnSubmit.disabled = false;
+        inputField.disabled = false;
+        return;
+      }
+      const min = Math.floor(segundos / 60);
+      const sec = segundos % 60;
+      timerEl.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+      segundos--;
+    }
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+  })();
+  {% endif %}
+
+  // Loading no botão ao submeter
+  document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('btnSubmit');
+    const btnText = document.getElementById('btnText');
+    btn.disabled = true;
+    btnText.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+  });
+</script>
+{% endblock %}

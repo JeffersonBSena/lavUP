@@ -1,0 +1,74 @@
+fabricante,modelo,tamanho
+Fiat,Mobi,Pequeno
+Fiat,Argo,Pequeno
+Fiat,Cronos,Pequeno
+Fiat,Pulse,Médio
+Fiat,Fastback,Médio
+Fiat,Toro,Grande
+Fiat,Strada,Médio
+Volkswagen,Gol,Pequeno
+Volkswagen,Polo,Pequeno
+Volkswagen,Virtus,Pequeno
+Volkswagen,T-Cross,Médio
+Volkswagen,Nivus,Médio
+Volkswagen,Taos,Grande
+Volkswagen,Amarok,Grande
+Chevrolet,Onix,Pequeno
+Chevrolet,Onix Plus,Pequeno
+Chevrolet,Tracker,Médio
+Chevrolet,Equinox,Grande
+Chevrolet,S10,Grande
+Chevrolet,Spin,Médio
+Hyundai,HB20,Pequeno
+Hyundai,HB20S,Pequeno
+Hyundai,Creta,Médio
+Hyundai,Tucson,Grande
+Hyundai,Santa Fe,Grande
+Toyota,Yaris,Pequeno
+Toyota,Corolla,Médio
+Toyota,Corolla Cross,Médio
+Toyota,Hilux,Grande
+Toyota,SW4,Grande
+Renault,Kwid,Pequeno
+Renault,Sandero,Pequeno
+Renault,Duster,Médio
+Renault,Captur,Médio
+Renault,Oroch,Grande
+Honda,City,Pequeno
+Honda,Civic,Médio
+Honda,HR-V,Médio
+Honda,CR-V,Grande
+Honda,ZR-V,Grande
+Jeep,Renegade,Médio
+Jeep,Compass,Grande
+Jeep,Commander,Grande
+Nissan,Versa,Pequeno
+Nissan,Kicks,Médio
+Nissan,Frontier,Grande
+Ford,Territory,Médio
+Ford,Bronco Sport,Grande
+Ford,Ranger,Grande
+Peugeot,208,Pequeno
+Peugeot,2008,Médio
+Peugeot,3008,Grande
+Citroën,C3,Pequeno
+Citroën,C4 Cactus,Médio
+Mitsubishi,L200 Triton,Grande
+Mitsubishi,Outlander,Grande
+Mitsubishi,Eclipse Cross,Médio
+Kia,Sportage,Grande
+Kia,Seltos,Médio
+BMW,X1,Grande
+BMW,320i,Médio
+Mercedes-Benz,GLA 200,Grande
+Mercedes-Benz,A 200,Médio
+Audi,Q3,Grande
+Audi,A3,Médio
+Volvo,XC40,Grande
+Volvo,XC60,Grande
+Caoa Chery,Tiggo 5X,Médio
+Caoa Chery,Tiggo 7,Grande
+Caoa Chery,Tiggo 8,Grande
+BYD,Dolphin,Pequeno
+BYD,Song Plus,Grande
+BYD,Yuan Plus,Médio

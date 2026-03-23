@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verificação - {{ APP_NAME }}{% endblock %}
+
+{% block content_full %}
+<div class="login-wrapper">
+  <div class="card login-card">
+    <div class="card-body">
+
+      <!-- Brand -->
+      <div class="text-center mb-4">
+        <div class="login-brand mb-2">
+          <img src="{% static 'img/logo.svg' %}" alt="{{ APP_NAME }}" height="60">
+        </div>
+        <p class="text-muted mb-0">
+          <i class="bi bi-whatsapp text-success"></i>
+          Código enviado para {{ whatsapp_masked|default:"seu WhatsApp" }}
+        </p>
+      </div>
+
+      <!-- Alerts -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            <i class="bi {% if message.tags == 'error' %}bi-exclamation-triangle-fill{% elif message.tags == 'warning' %}bi-exclamation-circle-fill{% elif message.tags == 'success' %}bi-check-circle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- Timer expiração -->
+      <div class="text-center mb-3">
+        <span class="badge bg-primary timer-badge fs-6 px-3 py-2" id="timerExpiracao">
+          <i class="bi bi-clock me-1"></i>
+          Expira em: <span id="tempoExpiracao">--:--</span>
+        </span>
+      </div>
+
+      <!-- Form -->
+      <form method="post" id="verifyForm">
+        {% csrf_token %}
+
+        <div class="mb-4">
+          <label for="codigo" class="form-label fw-semibold text-center d-block">
+            Digite o código de 6 dígitos
+          </label>
+          <input
+            type="text"
+            class="form-control form-control-lg verification-input"
+            id="codigo"
+            name="codigo"
+            maxlength="6"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            placeholder="000000"
+            autocomplete="one-time-code"
+            autofocus
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn btn-success btn-lg w-100" id="btnVerify">
+          <i class="bi bi-shield-check me-2"></i>
+          <span id="btnVerifyText">Verificar</span>
+        </button>
+      </form>
+
+      <!-- Reenviar / Voltar -->
+      <div class="d-flex justify-content-between mt-3">
+        <a href="{% url 'login' %}" class="btn btn-link text-decoration-none p-0">
+          <i class="bi bi-arrow-left me-1"></i> Voltar
+        </a>
+        <a href="{% url 'login' %}" class="btn btn-link text-decoration-none p-0" id="btnResend">
+          <i class="bi bi-arrow-clockwise me-1"></i> Reenviar código
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Aceitar apenas números no campo de código
+  document.getElementById('codigo').addEventListener('input', function(e) {
+    this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    // Auto-submit quando digitar 6 dígitos
+    if (this.value.length === 6) {
+      document.getElementById('verifyForm').requestSubmit();
+    }
+  });
+
+  // Timer de expiração do código
+  (function() {
+    let segundos = {{ tempo_restante|default:0 }};
+    const timerEl = document.getElementById('tempoExpiracao');
+    const badgeEl = document.getElementById('timerExpiracao');
+
+    function updateTimer() {
+      if (segundos <= 0) {
+        clearInterval(interval);
+        badgeEl.classList.replace('bg-primary', 'bg-danger');
+        timerEl.textContent = 'Expirado';
+        document.getElementById('btnVerify').disabled = true;
+        document.getElementById('codigo').disabled = true;
+        return;
+      }
+      const min = Math.floor(segundos / 60);
+      const sec = segundos % 60;
+      timerEl.textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+
+      // Alerta visual nos últimos 30 segundos
+      if (segundos <= 30) {
+        badgeEl.classList.replace('bg-primary', 'bg-warning');
+        badgeEl.classList.add('text-dark');
+      }
+      segundos--;
+    }
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+  })();
+
+  // Loading no botão ao submeter
+  document.getElementById('verifyForm').addEventListener('submit', function() {
+    const btn = document.getElementById('btnVerify');
+    const btnText = document.getElementById('btnVerifyText');
+    btn.disabled = true;
+    btnText.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verificando...';
+  });
+</script>
+{% endblock %}
