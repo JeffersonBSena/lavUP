@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 
 
 class EvolutionAPI:
-    """Cliente de transporte — envia mensagens via Evolution API (WhatsApp)."""
 
     def __init__(self):
         self.base_url = settings.EVOLUTION_API_URL

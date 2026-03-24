@@ -1,100 +1,63 @@
-# LavUP - Documentação do Projeto
+# LavUP - Documentação RAD do Projeto
 
-**Data:** 22/03/2026
+**Data de Início:** 22/03/2026
+**Última Atualização:** 23/03/2026
 **Stack:** Django 4.2 | MySQL 9.6 | Bootstrap 5.3 | Evolution API (WhatsApp)
+**Metodologia:** RAD (Rapid Application Development) — Python/Django
 
 ---
 
-## 1. Estrutura do Projeto
+## Progresso Geral
+
+| Fase RAD | Status | Progresso |
+|---|---|---|
+| 1. Planejamento de Requisitos | Concluída | 100% |
+| 2. Prototipação / Design do Usuário | Em andamento | 40% |
+| 3. Construção Rápida | Em andamento | 30% |
+| 4. Cutover (Testes e Implantação) | Não iniciada | 0% |
+
+---
+
+## Fase 1 — Planejamento de Requisitos (100%)
+
+> Levantamento do escopo, definição do domínio, modelagem de dados e escolha da stack.
+
+### 1.1 Escopo do Sistema
+
+Sistema de gestão para lava-jato com:
+- Cadastro de clientes, veículos e serviços
+- Ordens de serviço com múltiplos itens
+- Agendamento com controle de tempo e lavador
+- Autenticação 2FA via WhatsApp (sem senha)
+- Notificações automáticas por WhatsApp
+
+### 1.2 Stack Definida
+
+| Componente | Tecnologia | Versão |
+|---|---|---|
+| Linguagem | Python | 3.9.6 |
+| Framework Web | Django (MVT) | 4.2.29 |
+| Banco de Dados | MySQL | 9.6.0 (Homebrew) |
+| Frontend | Bootstrap (CDN) | 5.3.3 |
+| Ícones | Bootstrap Icons (CDN) | 1.11.3 |
+| Mensageria | Evolution API (WhatsApp) | — |
+| SO Desenvolvimento | macOS (Apple Silicon) | — |
+
+### 1.3 Modelagem de Dados
 
 ```
-lavup/
-├── .env                              # Variáveis de ambiente
-├── .gitignore                        # Arquivos ignorados pelo Git
-├── manage.py                         # CLI do Django
-├── requirements.txt                  # Dependências Python
-├── seeds/                            # Dados para popular o banco
-│   ├── fabricantes.csv               # 20 fabricantes
-│   ├── tamanhos.csv                  # 3 tamanhos (Pequeno, Médio, Grande)
-│   └── veiculos.csv                  # 73 veículos
-├── lavup/                            # App principal Django
-│   ├── settings.py                   # Configurações do projeto
-│   ├── urls.py                       # Rotas da aplicação
-│   ├── context_processors.py         # Variáveis globais nos templates
-│   ├── admin.py                      # Registro no Django Admin
-│   ├── models/                       # Models do banco de dados
-│   │   ├── __init__.py               # Imports centralizados
-│   │   ├── usuario.py                # Usuários do sistema
-│   │   ├── cliente.py                # Clientes
-│   │   ├── fabricante.py             # Fabricantes de veículos
-│   │   ├── tamanho.py                # Tamanhos de veículos
-│   │   ├── veiculo.py                # Veículos (modelo + fabricante + tamanho)
-│   │   ├── servico.py                # Serviços oferecidos
-│   │   ├── ordem_servico.py          # OS + itens da OS
-│   │   ├── agenda.py                 # Agendamentos
-│   │   └── codigo_verificacao.py     # Códigos 2FA + bloqueio de login
-│   ├── services/                     # Serviços de integração
-│   │   ├── evolution_api.py          # Client da Evolution API (transporte)
-│   │   └── mensagens.py              # Templates de mensagens + dispatch
-│   ├── views/                        # Views da aplicação
-│   │   └── auth.py                   # Login 2FA, logout, dashboard
-│   ├── management/commands/          # Comandos de seed
-│   │   ├── seed_admin.py             # Cria usuário admin inicial
-│   │   ├── seed_fabricantes.py       # Popula fabricantes
-│   │   ├── seed_tamanhos.py          # Popula tamanhos
-│   │   └── seed_veiculos.py          # Popula veículos
-│   ├── templates/                    # Templates HTML
-│   │   ├── base.html                 # Layout master (navbar + sidebar)
-│   │   ├── dashboard.html            # Página inicial pós-login
-│   │   ├── auth/
-│   │   │   ├── login_identify.html   # Etapa 1: e-mail ou WhatsApp
-│   │   │   └── login_verify.html     # Etapa 2: código de 6 dígitos
-│   │   └── partials/
-│   │       ├── navbar.html           # Barra de navegação superior
-│   │       └── sidebar.html          # Menu lateral esquerdo
-│   └── static/
-│       ├── css/style.css             # Estilos customizados
-│       └── img/                      # Logo + favicons
+usuarios ──< codigos_verificacao
+    │
+    └──< agenda >── ordem_servico >── os_servicos >── servicos
+                         │
+                    clientes    veiculos >── fabricantes
+                                   │
+                                tamanhos
+
+bloqueios_login (independente)
 ```
 
----
-
-## 2. Configuração do Ambiente
-
-### 2.1 Variáveis de ambiente (.env)
-
-| Variável | Descrição |
-|---|---|
-| `DJANGO_SECRET_KEY` | Chave secreta do Django |
-| `DJANGO_DEBUG` | Modo debug (True/False) |
-| `DB_NAME` | Nome do banco MySQL |
-| `DB_USER` | Usuário MySQL |
-| `DB_PASSWORD` | Senha MySQL |
-| `DB_HOST` | Host do MySQL |
-| `DB_PORT` | Porta do MySQL |
-| `EVOLUTION_API_URL` | URL da Evolution API |
-| `EVOLUTION_API_TOKEN` | Token de autenticação |
-| `EVOLUTION_INSTANCE` | Nome da instância WhatsApp |
-| `EVOLUTION_ENABLED` | Habilitar envio WhatsApp |
-| `ADMIN_NOME` | Nome do admin inicial |
-| `ADMIN_EMAIL` | E-mail do admin inicial |
-| `ADMIN_WHATSAPP` | WhatsApp do admin inicial |
-| `VERIFICATION_CODE_LENGTH` | Tamanho do código (6) |
-| `VERIFICATION_CODE_EXPIRY_MINUTES` | Expiração em minutos (5) |
-| `VERIFICATION_CODE_MAX_ATTEMPTS` | Tentativas máximas do código (3) |
-
-### 2.2 Banco de Dados
-
-- **Motor:** MySQL 9.6 (Homebrew)
-- **Banco:** `lavup` (charset utf8mb4)
-- **Usuário root:** senha configurada
-- **Usuário app:** `lavupUser@localhost` com privilégios apenas no DB `lavup`
-
----
-
-## 3. Models (Banco de Dados)
-
-### 3.1 Tabela `usuarios`
+#### Tabela `usuarios`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -108,7 +71,7 @@ lavup/
 | updated_at | DateTimeField | auto_now |
 | deleted_at | DateTimeField | nullable (soft delete) |
 
-### 3.2 Tabela `clientes`
+#### Tabela `clientes`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -118,7 +81,7 @@ lavup/
 | created_at | DateTimeField | auto_now_add |
 | updated_at | DateTimeField | auto_now |
 
-### 3.3 Tabela `fabricantes`
+#### Tabela `fabricantes`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -126,7 +89,7 @@ lavup/
 | nome | CharField(255) | obrigatório |
 | created_at | DateTimeField | auto_now_add |
 
-### 3.4 Tabela `tamanhos`
+#### Tabela `tamanhos`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -136,7 +99,7 @@ lavup/
 | incremento_tempo | IntegerField | acréscimo em minutos |
 | created_at | DateTimeField | auto_now_add |
 
-### 3.5 Tabela `veiculos`
+#### Tabela `veiculos`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -146,7 +109,7 @@ lavup/
 | modelo | CharField(255) | obrigatório |
 | created_at | DateTimeField | auto_now_add |
 
-### 3.6 Tabela `servicos`
+#### Tabela `servicos`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -159,7 +122,7 @@ lavup/
 | created_at | DateTimeField | auto_now_add |
 | updated_at | DateTimeField | auto_now |
 
-### 3.7 Tabela `ordem_servico`
+#### Tabela `ordem_servico`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -172,7 +135,7 @@ lavup/
 | created_at | DateTimeField | auto_now_add |
 | updated_at | DateTimeField | auto_now |
 
-### 3.8 Tabela `os_servicos`
+#### Tabela `os_servicos`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -183,7 +146,7 @@ lavup/
 | tempo_aplicado | IntegerField | tempo em minutos |
 | **Constraint** | unique_together | (ordem_servico, servico) |
 
-### 3.9 Tabela `agenda`
+#### Tabela `agenda`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -199,7 +162,7 @@ lavup/
 | created_at | DateTimeField | auto_now_add |
 | updated_at | DateTimeField | auto_now |
 
-### 3.10 Tabela `codigos_verificacao`
+#### Tabela `codigos_verificacao`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -211,7 +174,7 @@ lavup/
 | created_at | DateTimeField | auto_now_add |
 | expires_at | DateTimeField | auto (created + 5min) |
 
-### 3.11 Tabela `bloqueios_login`
+#### Tabela `bloqueios_login`
 
 | Campo | Tipo | Detalhes |
 |---|---|---|
@@ -224,36 +187,58 @@ lavup/
 
 **Regra:** Após 5 tentativas falhas → bloqueio de 30 minutos.
 
----
+### 1.4 Enums do Domínio
 
-## 4. Enums
+| Model | Campo | Valores |
+|---|---|---|
+| Usuario | tipo | `admin`, `lavador` |
+| OrdemServico | status | `aberta`, `iniciada`, `agendada`, `concluida`, `cancelada` |
+| Agenda | status | `agendado`, `iniciado`, `concluido`, `cancelado` |
 
-### 4.1 Usuario.tipo
-| Valor | Descrição |
+### 1.5 Variáveis de Ambiente (.env)
+
+| Variável | Descrição |
 |---|---|
-| `admin` | Administrador |
-| `lavador` | Lavador |
-
-### 4.2 OrdemServico.status
-| Valor | Descrição |
-|---|---|
-| `aberta` | OS criada |
-| `iniciada` | Lavagem em andamento |
-| `agendada` | Agendamento futuro |
-| `concluida` | Finalizada |
-| `cancelada` | Cancelada |
-
-### 4.3 Agenda.status
-| Valor | Descrição |
-|---|---|
-| `agendado` | Agendamento confirmado |
-| `iniciado` | Em execução |
-| `concluido` | Finalizado |
-| `cancelado` | Cancelado |
+| `DJANGO_SECRET_KEY` | Chave secreta do Django |
+| `DJANGO_DEBUG` | Modo debug (True/False) |
+| `DB_NAME` / `DB_USER` / `DB_PASSWORD` / `DB_HOST` / `DB_PORT` | Conexão MySQL |
+| `EVOLUTION_API_URL` / `EVOLUTION_API_TOKEN` / `EVOLUTION_INSTANCE` / `EVOLUTION_ENABLED` | Evolution API |
+| `ADMIN_NOME` / `ADMIN_EMAIL` / `ADMIN_WHATSAPP` | Admin inicial |
+| `VERIFICATION_CODE_LENGTH` / `VERIFICATION_CODE_EXPIRY_MINUTES` / `VERIFICATION_CODE_MAX_ATTEMPTS` | Configurações 2FA |
 
 ---
 
-## 5. Fluxo de Autenticação (2FA via WhatsApp)
+## Fase 2 — Prototipação / Design do Usuário (40%)
+
+> Prototipação iterativa das interfaces e fluxos com feedback rápido.
+
+### 2.1 Layout Base — Concluído
+
+- **Estrutura:** Navbar fixa + Sidebar lateral + Conteúdo principal
+- **Template master:** `base.html` com blocos extensíveis
+- **Logo:** SVG em `static/img/logo.svg`
+- **Favicons:** Completo (ico, png 16/32, apple-touch, android-chrome, webmanifest)
+
+### 2.2 Telas Implementadas
+
+| Tela | Template | Status |
+|---|---|---|
+| Login — Identificação | `auth/login_identify.html` | Concluído |
+| Login — Verificação 2FA | `auth/login_verify.html` | Concluído |
+| Dashboard | `dashboard.html` | Concluído |
+
+### 2.3 Telas Pendentes
+
+| Tela | Prioridade | Status |
+|---|---|---|
+| CRUD Clientes | Alta | Pendente |
+| CRUD Serviços | Alta | Pendente |
+| CRUD Ordens de Serviço | Alta | Pendente |
+| Agenda / Calendário | Alta | Pendente |
+| CRUD Usuários (admin) | Média | Pendente |
+| Relatórios | Baixa | Pendente |
+
+### 2.4 Fluxo de Autenticação 2FA — Concluído
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────┐
@@ -277,16 +262,69 @@ lavup/
 
 ---
 
-## 6. Serviços de Mensageria
+## Fase 3 — Construção Rápida (30%)
 
-### 6.1 Arquitetura (desmembrada)
+> Desenvolvimento iterativo dos módulos com integração contínua.
+
+### 3.1 Estrutura do Projeto
+
+```
+lavup/
+├── .env                              # Variáveis de ambiente
+├── .gitignore                        # Arquivos ignorados pelo Git
+├── manage.py                         # CLI do Django
+├── requirements.txt                  # Dependências Python
+├── seeds/                            # Dados para popular o banco
+│   ├── fabricantes.csv               # 20 fabricantes
+│   ├── tamanhos.csv                  # 3 tamanhos (Pequeno, Médio, Grande)
+│   └── veiculos.csv                  # 73 veículos
+├── lavup/                            # App principal Django
+│   ├── settings.py                   # Configurações do projeto
+│   ├── urls.py                       # Rotas da aplicação
+│   ├── context_processors.py         # Variáveis globais nos templates
+│   ├── admin.py                      # Registro no Django Admin
+│   ├── models/                       # Models do banco de dados
+│   ├── services/                     # Serviços de integração
+│   ├── views/                        # Views da aplicação
+│   ├── management/commands/          # Comandos de seed
+│   ├── templates/                    # Templates HTML
+│   └── static/                       # CSS + imagens
+```
+
+### 3.2 Módulos — Status de Construção
+
+| Módulo | Camadas | Status |
+|---|---|---|
+| **Autenticação 2FA** | Model + View + Template + Service | Concluído |
+| **Dashboard** | View + Template | Concluído |
+| **Mensageria WhatsApp** | Service (transport + templates) | Concluído |
+| **Seeds / Data Migrations** | Migrations + Commands + CSVs | Concluído |
+| **Clientes** | Model pronto, CRUD pendente | Em andamento |
+| **Serviços** | Model pronto, CRUD pendente | Em andamento |
+| **Veículos** | Model pronto, CRUD pendente | Em andamento |
+| **Ordens de Serviço** | Model pronto, CRUD pendente | Em andamento |
+| **Agenda** | Model pronto, CRUD pendente | Em andamento |
+| **Usuários (admin)** | Model pronto, CRUD pendente | Em andamento |
+
+### 3.3 Rotas Implementadas
+
+| URL | View | Módulo |
+|---|---|---|
+| `/` | `login_identify` | Autenticação |
+| `/login/` | `login_identify` | Autenticação |
+| `/login/verificar/` | `login_verify` | Autenticação |
+| `/logout/` | `logout_view` | Autenticação |
+| `/dashboard/` | `dashboard` | Dashboard |
+| `/admin/` | Django Admin | Administração |
+
+### 3.4 Serviços de Mensageria — Concluído
 
 | Camada | Arquivo | Responsabilidade |
 |---|---|---|
-| **Transporte** | `evolution_api.py` | Enviar mensagem via API |
-| **Conteúdo** | `mensagens.py` | Templates + despacho |
+| **Transporte** | `services/evolution_api.py` | Enviar mensagem via Evolution API |
+| **Conteúdo** | `services/mensagens.py` | Templates + despacho |
 
-### 6.2 Templates de Mensagens Disponíveis
+**Templates disponíveis:**
 
 | Método | Uso |
 |---|---|
@@ -298,20 +336,25 @@ lavup/
 | `agendamento_cancelado(data, horario)` | Agendamento cancelado |
 | `lembrete_agendamento(data, horario)` | Lembrete de agendamento |
 
----
+### 3.5 Migrations
 
-## 7. Dados Pré-populados (Seeds)
-
-### Execução
-
-```bash
-python manage.py seed_admin         # Admin inicial (do .env)
-python manage.py seed_fabricantes   # 20 fabricantes
-python manage.py seed_tamanhos      # 3 tamanhos
-python manage.py seed_veiculos      # 73 veículos
+```
+0001_initial
+  └── 0002_bloqueiologin_codigoverificacao
+        └── 0003_seed_fabricantes_tamanhos_veiculos
+              └── 0004_seed_admin
+                    └── 0005_seed_admins_extras
 ```
 
-### Tamanhos e Incrementos
+| Migration | Tipo | Descrição |
+|---|---|---|
+| `0001_initial` | Schema | 9 tabelas principais com FKs e constraints |
+| `0002_bloqueiologin_codigoverificacao` | Schema | Tabelas de autenticação 2FA |
+| `0003_seed_fabricantes_tamanhos_veiculos` | Data | 20 fabricantes + 3 tamanhos + 73 veículos (via CSV) |
+| `0004_seed_admin` | Data | Admin inicial (do `.env`) |
+| `0005_seed_admins_extras` | Data | 3 admins adicionais da equipe |
+
+### 3.6 Dados Pré-populados (Seeds)
 
 | Tamanho | Valor Extra | Tempo Extra |
 |---|---|---|
@@ -319,38 +362,11 @@ python manage.py seed_veiculos      # 73 veículos
 | Médio | R$ 15,00 | 15 min |
 | Grande | R$ 30,00 | 30 min |
 
-### Fabricantes
-Fiat, Volkswagen, Chevrolet, Hyundai, Toyota, Renault, Honda, Jeep, Nissan, Ford, Peugeot, Citroën, Mitsubishi, Kia, BMW, Mercedes-Benz, Audi, Volvo, Caoa Chery, BYD
+**Fabricantes:** Fiat, Volkswagen, Chevrolet, Hyundai, Toyota, Renault, Honda, Jeep, Nissan, Ford, Peugeot, Citroën, Mitsubishi, Kia, BMW, Mercedes-Benz, Audi, Volvo, Caoa Chery, BYD
 
-### Veículos (73 registros)
-Distribuídos entre Pequeno, Médio e Grande com fabricantes variados. Relação por nome (não por ID), resolvida no seed via `get_or_create`.
+**Veículos:** 73 registros distribuídos entre Pequeno, Médio e Grande. Relação por nome (não por ID), resolvida via `get_or_create`.
 
----
-
-## 8. Rotas da Aplicação
-
-| URL | View | Descrição |
-|---|---|---|
-| `/` | `login_identify` | Página de login (etapa 1) |
-| `/login/` | `login_identify` | Página de login (etapa 1) |
-| `/login/verificar/` | `login_verify` | Verificação do código (etapa 2) |
-| `/logout/` | `logout_view` | Encerrar sessão |
-| `/dashboard/` | `dashboard` | Painel principal (requer login) |
-| `/admin/` | Django Admin | Administração do Django |
-
----
-
-## 9. Frontend
-
-- **Framework CSS:** Bootstrap 5.3.3 (CDN)
-- **Ícones:** Bootstrap Icons 1.11.3 (CDN)
-- **Layout:** Navbar fixa + Sidebar lateral + Conteúdo principal
-- **Logo:** SVG em `static/img/logo.svg`
-- **Favicons:** Completo (ico, png 16/32, apple-touch, android-chrome, webmanifest)
-
----
-
-## 10. Dependências (requirements.txt)
+### 3.7 Dependências (requirements.txt)
 
 | Pacote | Versão | Uso |
 |---|---|---|
@@ -366,43 +382,48 @@ Distribuídos entre Pequeno, Médio e Grande com fabricantes variados. Relação
 
 ---
 
-## 11. Comandos Úteis
+## Fase 4 — Cutover: Testes e Implantação (0%)
+
+> Testes finais, migração de dados e deploy em produção.
+
+### 4.1 Pendências para Cutover
+
+- [ ] Testes unitários dos models
+- [ ] Testes de integração das views
+- [ ] Testes do fluxo 2FA completo
+- [ ] Testes de carga / stress
+- [ ] Configuração de servidor de produção
+- [ ] Variáveis de ambiente de produção
+- [ ] HTTPS / Certificado SSL
+- [ ] Backup automatizado do MySQL
+- [ ] Monitoramento e logs
+- [ ] Deploy final
+
+---
+
+## Referência Rápida — Comandos
 
 ```bash
-# Ativar ambiente virtual
+# Ambiente
 source venv/bin/activate
-
-# Rodar servidor de desenvolvimento
 python manage.py runserver
 
-# Criar/aplicar migrações
+# Banco de Dados
 python manage.py makemigrations
 python manage.py migrate
+python manage.py showmigrations
 
-# Popular banco de dados
+# Seeds (via management commands)
 python manage.py seed_admin
 python manage.py seed_fabricantes
 python manage.py seed_tamanhos
 python manage.py seed_veiculos
 
-# Verificar integridade do projeto
-python manage.py check
-
 # MySQL
 brew services start mysql
 brew services stop mysql
 mysql -u lavupUser -p lavup
+
+# Verificação
+python manage.py check
 ```
-
----
-
-## 12. Infraestrutura
-
-| Componente | Detalhes |
-|---|---|
-| **Python** | 3.9.6 |
-| **Django** | 4.2.29 |
-| **MySQL** | 9.6.0 (Homebrew) |
-| **SO** | macOS (Apple Silicon) |
-| **IDE** | VS Code (venv configurado) |
-| **WhatsApp** | Evolution API (zapi.devnativo.com.br) |

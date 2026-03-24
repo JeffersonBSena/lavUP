@@ -1,14 +1,3 @@
-"""
-Serviço de mensagens — monta o conteúdo e despacha via transporte (WhatsApp).
-
-Para adicionar uma nova mensagem:
-  1. Crie um método estático em MensagemTemplates que retorne o texto.
-  2. Crie um método em MensagemService que chame o template e envie.
-
-Exemplo:
-    MensagemService.enviar_boas_vindas(phone, nome_cliente)
-"""
-
 import logging
 from django.conf import settings
 from lavup.services.evolution_api import evolution_api
@@ -23,17 +12,17 @@ class MensagemTemplates:
     def codigo_verificacao(codigo):
         minutos = settings.VERIFICATION_CODE_EXPIRY_MINUTES
         return (
-            f'*{settings.APP_NAME} - Código de Acesso*\n\n'
+            f'*LavUP - Código de Acesso*\n\n'
             f'Seu código de verificação é:\n\n'
             f'*{codigo}*\n\n'
             f'Este código expira em {minutos} minutos.\n'
-            f'Se você não solicitou este código, ignore esta mensagem.'
+            f'Se você não solicitou este código, entre em contato com o Administrador principal urgentemente.'
         )
 
     @staticmethod
     def boas_vindas(nome):
         return (
-            f'*{settings.APP_NAME} - Bem-vindo!*\n\n'
+            f'*LavUP - Bem-vindo!*\n\n'
             f'Olá, {nome}! Seu cadastro foi realizado com sucesso.\n'
             f'Acesse o sistema para agendar seus serviços.'
         )
@@ -41,7 +30,7 @@ class MensagemTemplates:
     @staticmethod
     def os_criada(numero_os, servicos):
         return (
-            f'*{settings.APP_NAME} - Ordem de Serviço #{numero_os}*\n\n'
+            f'*LavUP - Ordem de Serviço #{numero_os}*\n\n'
             f'Sua OS foi aberta com os seguintes serviços:\n'
             f'{servicos}\n\n'
             f'Acompanhe o status pelo sistema.'
@@ -50,7 +39,7 @@ class MensagemTemplates:
     @staticmethod
     def os_concluida(numero_os):
         return (
-            f'*{settings.APP_NAME} - OS #{numero_os} Concluída*\n\n'
+            f'*LavUP - OS #{numero_os} Concluída*\n\n'
             f'Seu veículo está pronto! Pode retirá-lo quando quiser.\n'
             f'Obrigado pela preferência!'
         )
@@ -58,7 +47,7 @@ class MensagemTemplates:
     @staticmethod
     def agendamento_confirmado(data, horario, servicos):
         return (
-            f'*{settings.APP_NAME} - Agendamento Confirmado*\n\n'
+            f'*LavUP - Agendamento Confirmado*\n\n'
             f'Data: {data}\n'
             f'Horário: {horario}\n'
             f'Serviços: {servicos}\n\n'
@@ -68,7 +57,7 @@ class MensagemTemplates:
     @staticmethod
     def agendamento_cancelado(data, horario):
         return (
-            f'*{settings.APP_NAME} - Agendamento Cancelado*\n\n'
+            f'*LavUP - Agendamento Cancelado*\n\n'
             f'Seu agendamento de {data} às {horario} foi cancelado.\n'
             f'Para reagendar, acesse o sistema.'
         )
@@ -76,7 +65,7 @@ class MensagemTemplates:
     @staticmethod
     def lembrete_agendamento(data, horario):
         return (
-            f'*{settings.APP_NAME} - Lembrete*\n\n'
+            f'*LavUP - Lembrete*\n\n'
             f'Não esqueça do seu agendamento!\n'
             f'Data: {data}\n'
             f'Horário: {horario}\n\n'
