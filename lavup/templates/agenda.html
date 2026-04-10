@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Agenda - {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+
+<div id="agenda" class="mb-5">
+  <h2 class="mb-4"><i class="bi bi-calendar-check me-2"></i>Agenda</h2>
+  <div class="mb-3">
+    <button class="btn btn-primary btn-sm">Inserir</button>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Cliente</th>
+        <th>Serviço</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for agendamento in agendamentos %}
+      <tr>
+        <td>{{ agendamento.data|date:"d/m/Y H:i" }}</td>
+        <td>{{ agendamento.cliente.nome}}</td>
+        <td>{{ agendamento.servico.nome}}</td>
+        <td>
+          <span class="badge
+            {%if agendamento.status == 'Confirmado' %}bg-success
+            {% elif agendamento.status == 'Pendente' %}bg-warning text-dark
+            {% else %}bg-secondary{% endif %}">
+            {{ agendamento.status}}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-warning btn-sm" data-id="{{ agendamento.id }}">Editar</button>
+          <button class="btn btn-danger btn-sm" data-id="{{ agendamento.id }}">Deletar</button>
+        </td>
+      </tr>
+      {% empty%}
+      <tr>
+        <td colspan="5" class="text-center">Nenhum agendamento encontrado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

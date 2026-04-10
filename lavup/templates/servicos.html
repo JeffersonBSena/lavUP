@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Serviços - {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+
+<div id="servicos" class="mb-5">
+  <h2 class="mb-4"><i class="bi bi-tools me-2"></i>Servicos</h2>
+  <div class="mb-3">
+    <button class="btn btn-primary btn-sm">Inserir</button>
+  </div>
+  <div class="row g-3">
+    {% for servico in servicos %}
+    <div class="col-md-3">
+      <div class="card shadow-sm text-center">
+        <div class="card-body">
+          <h5>{{ servico.nome }}</h5>
+          <p>Duração: {{ servico.duracao }}</p>
+          <button class="btn btn-warning btn-sm" data-id="{{ servico.id }}">Editar</button>
+          <button class="btn btn-danger btn-sm" data-id="{{ servico.id }}">Deletar</button>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-muted">Nenhum serviço cadastrado.</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
