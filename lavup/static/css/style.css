@@ -1,5 +1,7 @@
 /* ===== Layout Geral ===== */
-
+html {
+  scroll-behavior: smooth; /*rolagem suave para links internos*/
+}
 body {
   background-color: #f4f6f9;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
