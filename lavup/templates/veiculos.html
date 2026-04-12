@@ -2,41 +2,57 @@
 
 {% block title %}Veículos - {{ APP_NAME }}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
 {% block content %}
 
 <div id="veiculos" class="mb-5">
   <h2 class="mb-4"><i class="bi bi-car-front me-2"></i>Veículos</h2>
   <div class="mb-3">
-    <button class="btn btn-primary btn-sm">Inserir</button>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalVeiculo">Inserir</button>
   </div>
+
+  {% include 'partials/form_veiculo.html' %}
+
+  {% include 'partials/modal_deletar.html' %}
+
   <div class="table-responsive">
-    <table class="table table-striped">
+    <table id="tabela-veiculos" class="table table-striped">
       <thead>
         <tr>
-          <th>Cliente</th>
-          <th>Marca</th>
+          <th>Fabricante</th>
           <th>Modelo</th>
-          <th>Ano</th>
-          <th>Placa</th>
+          <th>Tamanho</th>
           <th>Ações</th>
         </tr>
       </thead>
       <tbody>
         {% for veiculo in veiculos %}
         <tr>
-          <td>{{ veiculo.cliente.nome }}</td>
-          <td>{{ veiculo.marca }}</td>
+          <td>{{ veiculo.fabricante.nome }}</td>
           <td>{{ veiculo.modelo }}</td>
-          <td>{{ veiculo.ano }}</td>
-          <td>{{ veiculo.placa }}</td>
+          <td>{{ veiculo.tamanho }}</td>
           <td>
-            <button class="btn btn-warning btn-sm" data-id="{{ veiculo.id }}">Editar</button>
-            <button class="btn btn-danger btn-sm" data-id="{{ veiculo.id }}">Deletar</button>
+            <button class="btn btn-warning btn-sm btn-editar-veiculo"
+              data-id="{{ veiculo.id }}"
+              data-fabricante="{{ veiculo.fabricante.id }}"
+              data-modelo="{{ veiculo.modelo }}"
+              data-tamanho="{{ veiculo.tamanho.id }}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalVeiculo">Editar</button>
+            <button class="btn btn-danger btn-sm btn-deletar"
+              data-url="/veiculos/{{ veiculo.id }}/deletar/"
+              data-entidade="o veículo"
+              data-nome="{{ veiculo.fabricante.nome }} {{ veiculo.modelo }}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalDeletar">Deletar</button>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="6" class="text-center">Nenhum veículo cadastrado.</td>
+          <td colspan="4" class="text-center">Nenhum veículo cadastrado.</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -44,4 +60,61 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  $(document).ready(function () {
+    var urlCriar = '{% url "veiculo_criar" %}';
+
+    // Editar: preenche o modal com dados da linha
+    $(document).on('click', '.btn-editar-veiculo', function () {
+      var id = $(this).data('id');
+      $('#modalVeiculoLabel').text('Editar Veículo');
+      $('#formVeiculo').attr('action', '/veiculos/' + id + '/editar/');
+      $('#fabricante').val($(this).data('fabricante'));
+      $('#modelo').val($(this).data('modelo'));
+      $('#tamanho').val($(this).data('tamanho'));
+    });
+
+    // Deletar: preenche o modal genérico de confirmação
+    $(document).on('click', '.btn-deletar', function () {
+      $('#deletarEntidade').text($(this).data('entidade'));
+      $('#deletarNome').text($(this).data('nome'));
+      $('#formDeletar').attr('action', $(this).data('url'));
+    });
+
+    // Inserir: reseta o modal
+    $('[data-bs-target="#modalVeiculo"]').not('.btn-editar-veiculo').on('click', function () {
+      $('#modalVeiculoLabel').text('Novo Veículo');
+      $('#formVeiculo').attr('action', urlCriar);
+      $('#formVeiculo')[0].reset();
+    });
+
+    $('#tabela-veiculos').DataTable({
+      pageLength: 10,
+      ordering: true,
+      columnDefs: [
+        { orderable: false, searchable: false, targets: -1 }
+      ],
+      language: {
+        search: "Pesquisar:",
+        lengthMenu: "Mostrar _MENU_ por página",
+        info: "Exibindo _START_ a _END_ de _TOTAL_ veículos",
+        infoEmpty: "Nenhum veículo encontrado",
+        infoFiltered: "(filtrado de _MAX_ total)",
+        zeroRecords: "Nenhum veículo encontrado",
+        paginate: {
+          first: "Primeiro",
+          last: "Último",
+          next: "Próximo",
+          previous: "Anterior"
+        }
+      }
+    });
+  });
+</script>
 {% endblock %}

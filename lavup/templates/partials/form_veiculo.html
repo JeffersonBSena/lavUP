@@ -1,0 +1,41 @@
+<div class="modal fade" id="modalVeiculo" tabindex="-1" aria-labelledby="modalVeiculoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formVeiculo" method="post" action="{% url 'veiculo_criar' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalVeiculoLabel">Novo Veículo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="fabricante" class="form-label">Fabricante</label>
+            <select class="form-select" id="fabricante" name="fabricante" required>
+              <option value="">Selecione...</option>
+              {% for fabricante in fabricantes %}
+              <option value="{{ fabricante.id }}">{{ fabricante.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="modelo" class="form-label">Modelo</label>
+            <input type="text" class="form-control" id="modelo" name="modelo" required>
+          </div>
+          <div class="mb-3">
+            <label for="tamanho" class="form-label">Tamanho</label>
+            <select class="form-select" id="tamanho" name="tamanho" required>
+              <option value="">Selecione...</option>
+              {% for tamanho in tamanhos %}
+              <option value="{{ tamanho.id }}">{{ tamanho.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

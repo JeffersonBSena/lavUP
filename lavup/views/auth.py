@@ -192,7 +192,11 @@ def logout_view(request):
 
 def dashboard(request):
     """Página inicial após login."""
-    return render(request, 'dashboard.html')
+    from lavup.models.veiculo import Veiculo
+    context = {
+        'veiculos_total': Veiculo.objects.count(),
+    }
+    return render(request, 'dashboard.html', context)
 
 
 # --- Helpers ---
