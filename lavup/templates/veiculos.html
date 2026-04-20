@@ -28,6 +28,7 @@
           <th>Ações</th>
         </tr>
       </thead>
+
       <tbody>
         {% for veiculo in veiculos %}
         <tr>
@@ -42,6 +43,7 @@
               data-tamanho="{{ veiculo.tamanho.id }}"
               data-bs-toggle="modal"
               data-bs-target="#modalVeiculo">Editar</button>
+
             <button class="btn btn-danger btn-sm btn-deletar"
               data-url="/veiculos/{{ veiculo.id }}/deletar/"
               data-entidade="o veículo"
@@ -56,6 +58,7 @@
         </tr>
         {% endfor %}
       </tbody>
+
     </table>
   </div>
 </div>
