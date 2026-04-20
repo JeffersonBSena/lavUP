@@ -1,0 +1,67 @@
+<div class="modal fade" id="modalAgenda" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form id="formAgenda" method="post" action="{% url 'agneda_criar' %}">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAgendaLabel">Nova Agenda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <label class="form-label">Ordem de Serviço</label>
+                    <select class="form-select" name="os" required>
+                        <option value="">Selecione...</option>
+                        {% for ordem in ordens %}
+                        <option value="{{ ordem.id }}">OS #{{ ordem.id }} - {{ ordem.cliente }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Lavador</label>
+                    <select class="form-select" name="lavador" required>
+                        <option value="">Selecione...</option>
+                        {% for usuario in usuarios %}
+                        <option value="{{ usuario.id }}">{{ usuario.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Início Previsto</label>
+                    <input type="datetime-local" class="form-control" name="fim_previsto" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="agendado">Agendado</option>
+                        <option value="iniciado">Iniciado</option>
+                        <option value="concluido">Concluído</option>
+                        <option value="cancelado">Cnacelado</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Motivo do Cancelamento</label>
+                    <textarea class="form-control" name="motivo_cancelamento" rows="2"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                    Salvar
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

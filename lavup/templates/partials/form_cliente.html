@@ -1,0 +1,43 @@
+<div class="modal fade" id="modalCliente" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            
+            <form id="formCliente" method="post" action="{% url 'cliente_criar' %}">
+                {% csrf_token %}
+
+                <!--Header-->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalClienteLabel">Novo Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!--Body-->
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" class="form-control" name="nome" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">WhatsApp</label>
+                        <input type="text" class="form-control" name="whatsapp" placeholder="(11) 99999-9999">
+                    </div>
+                </div>
+
+
+                <!--Footer-->
+                <div class="modal-footer">
+                    <button type="button" class="bt btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="submit" class="btn btn-primary">
+                        Salvar
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>
