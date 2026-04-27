@@ -10,9 +10,33 @@ def agenda(request):
     return render(request, 'agenda.html')
 
 
+def agenda_criar(request):
+    return redirect('agenda')
+
+
+def agenda_editar(request, pk):
+    return redirect('agenda')
+
+
+def agenda_deletar(request, pk):
+    return redirect('agenda')
+
+
 def clientes(request):
     """Página de clientes."""
     return render(request, 'clientes.html')
+
+
+def cliente_criar(request):
+    return redirect('clientes')
+
+
+def cliente_editar(request, pk):
+    return redirect('clientes')
+
+
+def cliente_deletar(request, pk):
+    return redirect('clientes')
 
 
 def veiculos(request):
@@ -60,9 +84,33 @@ def servicos(request):
     return render(request, 'servicos.html')
 
 
+def servico_criar(request):
+    return redirect('servicos')
+
+
+def servico_editar(request, pk):
+    return redirect('servicos')
+
+
+def servico_deletar(request, pk):
+    return redirect('servicos')
+
+
 def usuarios(request):
     """Página de usuários."""
     return render(request, 'usuarios.html')
+
+
+def usuario_criar(request):
+    return redirect('usuarios')
+
+
+def usuario_editar(request, pk):
+    return redirect('usuarios')
+
+
+def usuario_deletar(request, pk):
+    return redirect('usuarios')
 
 
 def configuracoes(request):
