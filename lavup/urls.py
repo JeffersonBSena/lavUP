@@ -30,6 +30,7 @@ urlpatterns = [
     path('agenda/<int:pk>/deletar/', login_required(agenda_deletar, login_url='login'), name='agenda_deletar'),
     
     path('clientes/', login_required(clientes, login_url='login'), name='clientes'),
+    path('clientes2/', login_required(clientes, login_url='login'), name='clientes2'),
     path('clientes/criar/', login_required(cliente_criar, login_url='login'), name='cliente_criar'),
     path('clientes/<int:pk>/editar/', login_required(cliente_editar, login_url='login'), name='cliente_editar'),
     path('clientes/<int:pk>/deletar/', login_required(cliente_deletar, login_url='login'), name='cliente_deletar'),

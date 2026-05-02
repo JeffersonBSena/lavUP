@@ -5,6 +5,7 @@ from lavup.models.tamanho import Tamanho
 from lavup.models.veiculo import Veiculo
 
 
+
 def agenda(request):
     """Página de agendamentos."""
     return render(request, 'agenda.html')
@@ -27,16 +28,20 @@ def clientes(request):
     return render(request, 'clientes.html')
 
 
+
 def cliente_criar(request):
     return redirect('clientes')
+
 
 
 def cliente_editar(request, pk):
     return redirect('clientes')
 
 
+
 def cliente_deletar(request, pk):
     return redirect('clientes')
+
 
 
 def veiculos(request):
