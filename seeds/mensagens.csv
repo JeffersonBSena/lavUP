@@ -27,6 +27,18 @@ Sua OS foi aberta com os seguintes serviços:
 {servicos}
 
 Acompanhe o status pelo sistema."
+os_fila,Cliente entrou na fila,Notificação quando a OS é aberta no modo Fila (cliente no local agora),"numero_os,servicos","*LavUP - Você está na fila* ⏳
+
+Sua OS #{numero_os} foi aberta e você entrou na nossa fila de atendimento.
+Serviços: {servicos}
+
+Em instantes o lavador iniciará o atendimento e você receberá um novo aviso aqui no WhatsApp.
+Obrigado pela preferência!"
+os_iniciada,Ordem de Serviço iniciada,Notificação ao cliente quando o lavador inicia o atendimento,numero_os,"*LavUP - OS #{numero_os} Iniciada* 🚿
+
+Boa notícia! A lavagem do seu veículo começou agora.
+Você será avisado por aqui assim que estiver pronta.
+Obrigado pela preferência!"
 os_concluida,Ordem de Serviço concluída,Notificação de conclusão de OS,numero_os,"*LavUP - OS #{numero_os} Concluída*
 
 Seu veículo está pronto! Pode retirá-lo quando quiser.

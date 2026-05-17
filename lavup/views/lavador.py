@@ -36,7 +36,7 @@ def main(request):
 
 
 def agenda_iniciar(request, pk):
-    """Inicia o atendimento (status=iniciado, inicio_real=now, OS=iniciada)."""
+    """Inicia o atendimento (status=iniciado, inicio_real=now, OS=iniciada) e notifica o cliente."""
     if request.method != 'POST':
         return redirect('lavador_main')
     agenda = get_object_or_404(Agenda, pk=pk)
@@ -48,7 +48,18 @@ def agenda_iniciar(request, pk):
     agenda.save(update_fields=['status', 'inicio_real', 'updated_at'])
     agenda.os.status = 'iniciada'
     agenda.os.save(update_fields=['status', 'updated_at'])
-    messages.success(request, f'Atendimento iniciado (OS #{agenda.os_id}).')
+
+    phone = agenda.os.cliente.whatsapp if agenda.os.cliente else None
+    notificado = False
+    if phone:
+        try:
+            MensagemService.enviar_os_iniciada(phone, agenda.os_id)
+            notificado = True
+        except Exception:
+            pass
+
+    sufixo = ' Cliente notificado.' if notificado else ''
+    messages.success(request, f'Atendimento iniciado (OS #{agenda.os_id}).{sufixo}')
     return redirect('lavador_main')
 
 

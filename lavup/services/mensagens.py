@@ -57,6 +57,16 @@ class MensagemService:
         )
 
     @staticmethod
+    def enviar_os_fila(phone, numero_os, servicos):
+        return MensagemService.enviar(
+            'os_fila', phone, numero_os=numero_os, servicos=servicos,
+        )
+
+    @staticmethod
+    def enviar_os_iniciada(phone, numero_os):
+        return MensagemService.enviar('os_iniciada', phone, numero_os=numero_os)
+
+    @staticmethod
     def enviar_os_concluida(phone, numero_os):
         return MensagemService.enviar('os_concluida', phone, numero_os=numero_os)
 

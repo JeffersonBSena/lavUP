@@ -370,7 +370,18 @@ def os_criar(request):
                     status='agendado',
                     inicio_real=None,
                 )
-                _notificar_agendamento(agenda_obj, criado=True)
+                if tipo == 'fila':
+                    phone = cliente.whatsapp if cliente else None
+                    if phone:
+                        servicos_str = ', '.join(
+                            s.servico.nome for s in os_obj.servicos.select_related('servico').all()
+                        ) or 'A confirmar'
+                        try:
+                            MensagemService.enviar_os_fila(phone, os_obj.id, servicos_str)
+                        except Exception:
+                            pass
+                else:
+                    _notificar_agendamento(agenda_obj, criado=True)
 
                 rotulo = 'na fila (cliente no local)' if tipo == 'fila' else 'agendada'
                 messages.success(
