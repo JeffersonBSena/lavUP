@@ -30,9 +30,15 @@
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Início Previsto</label>
-                    <input type="datetime-local" class="form-control" name="fim_previsto" required>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Início Previsto</label>
+                        <input type="datetime-local" class="form-control" name="inicio_previsto" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Fim Previsto</label>
+                        <input type="datetime-local" class="form-control" name="fim_previsto" required>
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -41,7 +47,7 @@
                         <option value="agendado">Agendado</option>
                         <option value="iniciado">Iniciado</option>
                         <option value="concluido">Concluído</option>
-                        <option value="cancelado">Cnacelado</option>
+                        <option value="cancelado">Cancelado</option>
                     </select>
                 </div>
 

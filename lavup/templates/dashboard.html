@@ -10,26 +10,27 @@
 </div>
 
 <div class="row g-4">
-  <div class="col-md-3">
+  <div class="{% if is_lavador_view %}col-md-6{% else %}col-md-3{% endif %}">
     <div class="card border-0 shadow-sm">
       <div class="card-body text-center">
         <i class="bi bi-calendar-check text-primary fs-1"></i>
         <h5 class="mt-2 mb-0">Agendamentos</h5>
-        <p class="text-muted mb-0">Hoje</p>
+        <p class="text-muted mb-0">{% if is_lavador_view %}Meus de hoje{% else %}Hoje{% endif %}</p>
         <h2 class="text-primary mt-1">{{ agendamentos_hoje|default:"0" }}</h2>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
+  <div class="{% if is_lavador_view %}col-md-6{% else %}col-md-3{% endif %}">
     <div class="card border-0 shadow-sm">
       <div class="card-body text-center">
         <i class="bi bi-clipboard-check text-success fs-1"></i>
         <h5 class="mt-2 mb-0">OS Abertas</h5>
-        <p class="text-muted mb-0">Em andamento</p>
+        <p class="text-muted mb-0">{% if is_lavador_view %}Minhas em andamento{% else %}Em andamento{% endif %}</p>
         <h2 class="text-success mt-1">{{ os_abertas|default:"0" }}</h2>
       </div>
     </div>
   </div>
+  {% if not is_lavador_view %}
   <div class="col-md-3">
     <div class="card border-0 shadow-sm">
       <div class="card-body text-center">
@@ -47,6 +48,62 @@
         <h5 class="mt-2 mb-0">Veículos</h5>
         <p class="text-muted mb-0">Cadastrados</p>
         <h2 class="text-warning mt-1">{{ veiculos_total|default:"0"}}</h2>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="row g-4 mt-1">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>{% if is_lavador_view %}Minha agenda de hoje{% else %}Agenda de Hoje{% endif %}</h5>
+        {% if is_lavador_view %}
+        <a href="{% url 'lavador_main' %}" class="btn btn-sm btn-outline-primary">Ir ao painel</a>
+        {% else %}
+        <a href="{% url 'agenda' %}" class="btn btn-sm btn-outline-primary">Ver completa</a>
+        {% endif %}
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Horário</th>
+                <th>Cliente</th>
+                <th>Veículo / Placa</th>
+                <th>Lavador</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in agenda_hoje %}
+              <tr>
+                <td><strong>{{ a.inicio_previsto|date:"H:i" }}</strong> – {{ a.fim_previsto|date:"H:i" }}</td>
+                <td>{{ a.os.cliente.nome }}</td>
+                <td>{{ a.os.veiculo.fabricante.nome }} {{ a.os.veiculo.modelo }}<br><small class="text-muted">{{ a.os.placa_veiculo }}</small></td>
+                <td>{{ a.lavador.nome }}</td>
+                <td>
+                  <span class="badge
+                    {% if a.status == 'agendado' %}bg-primary
+                    {% elif a.status == 'iniciado' %}bg-warning text-dark
+                    {% elif a.status == 'concluido' %}bg-success
+                    {% else %}bg-secondary{% endif %}">
+                    {{ a.get_status_display }}
+                  </span>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                  <i class="bi bi-calendar-x me-2"></i>Nenhum agendamento para hoje.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

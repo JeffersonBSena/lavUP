@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+
+{% block title %}Painel do Lavador - {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0"><i class="bi bi-droplet-half me-2"></i>Painel do Lavador</h2>
+  {% if not is_lavador %}
+  <span class="badge bg-info text-dark">Visão geral (admin/atendente)</span>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  {% for a in agendas %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center
+        {% if a.status == 'iniciado' %}bg-warning text-dark{% else %}bg-light{% endif %}">
+        <strong>OS #{{ a.os_id }}</strong>
+        <span class="badge
+          {% if a.status == 'agendado' %}bg-primary
+          {% elif a.status == 'iniciado' %}bg-warning text-dark
+          {% else %}bg-secondary{% endif %}">{{ a.get_status_display }}</span>
+      </div>
+
+      <div class="card-body">
+        <p class="mb-1"><i class="bi bi-clock me-1"></i><strong>{{ a.inicio_previsto|date:"d/m H:i" }}</strong> – {{ a.fim_previsto|date:"H:i" }}</p>
+        <p class="mb-1"><i class="bi bi-person me-1"></i>{{ a.os.cliente.nome }}</p>
+        <p class="mb-1"><i class="bi bi-car-front me-1"></i>{{ a.os.veiculo.fabricante.nome }} {{ a.os.veiculo.modelo }} — <code>{{ a.os.placa_veiculo }}</code></p>
+        <p class="mb-1 small text-muted">Lavador: {{ a.lavador.nome }}</p>
+        <div class="mt-2">
+          {% for it in a.os.servicos.all %}
+            <span class="badge bg-secondary me-1">{{ it.servico.nome }} ({{ it.tempo_aplicado }}min)</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card-footer bg-white border-0 d-flex flex-wrap gap-1">
+        {% if a.status == 'agendado' %}
+        <form method="post" action="{% url 'agenda_iniciar' a.id %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-play-fill"></i> Iniciar</button>
+        </form>
+        {% endif %}
+
+        {% if a.status == 'iniciado' %}
+        <button type="button" class="btn btn-success btn-sm"
+          data-bs-toggle="modal" data-bs-target="#modalConcluir"
+          data-id="{{ a.id }}"
+          data-os="{{ a.os_id }}">
+          <i class="bi bi-check2-circle"></i> Concluir
+        </button>
+        {% endif %}
+
+        <button type="button" class="btn btn-outline-primary btn-sm"
+          data-bs-toggle="modal" data-bs-target="#modalReagendar"
+          data-id="{{ a.id }}"
+          data-inicio="{{ a.inicio_previsto|date:'Y-m-d\TH:i' }}">
+          <i class="bi bi-calendar-event"></i> Reagendar
+        </button>
+
+        <button type="button" class="btn btn-outline-warning btn-sm"
+          data-bs-toggle="modal" data-bs-target="#modalTransferir"
+          data-id="{{ a.id }}"
+          data-lavador="{{ a.lavador_id }}">
+          <i class="bi bi-arrow-left-right"></i> Transferir
+        </button>
+
+        <button type="button" class="btn btn-outline-danger btn-sm"
+          data-bs-toggle="modal" data-bs-target="#modalCancelar"
+          data-id="{{ a.id }}">
+          <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="alert alert-info text-center">
+      <i class="bi bi-emoji-smile me-2"></i>Nenhuma agenda pendente no momento.
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+<!-- Modal Reagendar -->
+<div class="modal fade" id="modalReagendar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formReagendar" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-calendar-event me-2"></i>Reagendar atendimento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Novo Início Previsto</label>
+          <input type="datetime-local" class="form-control" name="inicio_previsto" required>
+          <div class="form-text">O fim previsto será recalculado pela soma dos tempos dos serviços.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Reagendar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Transferir -->
+<div class="modal fade" id="modalTransferir" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formTransferir" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-arrow-left-right me-2"></i>Transferir para outro lavador</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Lavador</label>
+          <select class="form-select" name="lavador" required>
+            <option value="">Selecione...</option>
+            {% for l in lavadores %}
+            <option value="{{ l.id }}">{{ l.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">Transferir</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Concluir -->
+<div class="modal fade" id="modalConcluir" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formConcluir" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="bi bi-check2-circle me-2"></i>Fechar OS <span id="concluirOsLabel"></span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info py-2 mb-3">
+            <i class="bi bi-whatsapp me-1"></i> O cliente será notificado por WhatsApp que a lavagem foi concluída.
+          </div>
+          <label class="form-label">Observações do fechamento</label>
+          <textarea class="form-control" name="observacoes" rows="3"
+            placeholder="Ex.: cliente solicitou cera extra, deixei chave na recepção..."></textarea>
+          <div class="form-text">Será anexada às observações da OS.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle me-1"></i>Confirmar fechamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cancelar -->
+<div class="modal fade" id="modalCancelar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formCancelar" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Cancelar atendimento</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Motivo do cancelamento</label>
+          <textarea class="form-control" name="motivo" rows="3" required minlength="5"
+            placeholder="Descreva o motivo (cliente desistiu, equipamento quebrado, ...)"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+          <button type="submit" class="btn btn-danger">Confirmar Cancelamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Reagendar — preenche action e datetime atual
+    $('#modalReagendar').on('show.bs.modal', function (e) {
+      var btn = $(e.relatedTarget);
+      var id = btn.data('id');
+      $('#formReagendar').attr('action', '/lavador/agenda/' + id + '/reagendar/');
+      $('#formReagendar input[name="inicio_previsto"]').val(btn.data('inicio'));
+    });
+
+    // Transferir — preenche action e marca lavador atual
+    $('#modalTransferir').on('show.bs.modal', function (e) {
+      var btn = $(e.relatedTarget);
+      var id = btn.data('id');
+      $('#formTransferir').attr('action', '/lavador/agenda/' + id + '/transferir/');
+      $('#formTransferir select[name="lavador"]').val('');
+    });
+
+    // Concluir — preenche action, label da OS e limpa observações
+    $('#modalConcluir').on('show.bs.modal', function (e) {
+      var btn = $(e.relatedTarget);
+      var id = btn.data('id');
+      $('#formConcluir').attr('action', '/lavador/agenda/' + id + '/concluir/');
+      $('#concluirOsLabel').text('#' + btn.data('os'));
+      $('#formConcluir textarea[name="observacoes"]').val('');
+    });
+
+    // Cancelar — preenche action e limpa motivo
+    $('#modalCancelar').on('show.bs.modal', function (e) {
+      var btn = $(e.relatedTarget);
+      var id = btn.data('id');
+      $('#formCancelar').attr('action', '/lavador/agenda/' + id + '/cancelar/');
+      $('#formCancelar textarea[name="motivo"]').val('');
+    });
+  });
+</script>
+{% endblock %}

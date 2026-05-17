@@ -2,56 +2,71 @@
 
 {% block title %}Serviços - {{ APP_NAME }}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
 {% block content %}
 
 <div id="servicos" class="mb-5">
   <h2 class="mb-4"><i class="bi bi-tools me-2"></i>Serviços</h2>
 
   <div class="mb-3">
-    <button class="btn btn-primary btn-sm"
-      data-bs-toggle="modal"
-      data-bs-target="#modalServico">
-      Inserir
-    </button>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalServico">Inserir</button>
   </div>
-  
+
   {% include 'partials/form_servico.html' %}
   {% include 'partials/modal_deletar.html' %}
 
-  <div class="row g-3">
-    {% for servico in servicos %}
-    <div class="col-md-3">
-      <div class="card shadow-sm text-center">
-        <div class="card-body">
-        
-          <h5>{{ servico.nome }}</h5>
+  <div class="table-responsive">
+    <table id="tabela-servicos" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Valor base</th>
+          <th>Tempo (min)</th>
+          <th>Ativo</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
 
-          <p>Valor: R$ {{ servico.valor_base }}</p>
-          <p>Incremento: {{ servico.incremento_tempo }} min</p>
-          <button class="btn btn-warning btn-sm btn-editar-servico"
-           data-id="{{ servico.id }}"
-           data-nome="{{ servico.nome }}"
-           data-descricao="{{ servico.descricao }}"
-           data-valor="{{ servico.valor_base }}"
-           data-tempo="{{ servico.incremento_tempo }}"
-           data-ativo="{{ servico.ativo }}"
-           data-bs-toggle="modal"
-           data-bs-target="#modalServico">
-           Editar
-          </button>
+      <tbody>
+        {% for servico in servicos %}
+        <tr>
+          <td>{{ servico.nome }}</td>
+          <td>{{ servico.descricao|default:"—"|truncatechars:60 }}</td>
+          <td>R$ {{ servico.valor_base }}</td>
+          <td>{{ servico.incremento_tempo }}</td>
+          <td>
+            {% if servico.ativo %}
+              <span class="badge bg-success">Sim</span>
+            {% else %}
+              <span class="badge bg-secondary">Não</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-warning btn-sm btn-editar-servico"
+              data-id="{{ servico.id }}"
+              data-nome="{{ servico.nome }}"
+              data-descricao="{{ servico.descricao|default:'' }}"
+              data-valor="{{ servico.valor_base }}"
+              data-tempo="{{ servico.incremento_tempo }}"
+              data-ativo="{{ servico.ativo|yesno:'1,0' }}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalServico">Editar</button>
 
-          <button class="btn btn-danger btn-sm btn-deletar"
-            data-id="{{ servico.id }}"
-            data-nome="{{ servico.nome }}"
-            data-url="{% url 'servico_deletar' servico.id %}">
-            Deletar
-          </button>
-        </div>
-      </div>
-    </div>
-    {% empty %}
-    <p class="text-muted">Nenhum serviço cadastrado.</p>
-    {% endfor %}
+            <button class="btn btn-danger btn-sm btn-deletar"
+              data-url="{% url 'servico_deletar' servico.id %}"
+              data-entidade="o serviço"
+              data-nome="{{ servico.nome }}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalDeletar">Deletar</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -59,53 +74,54 @@
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
-
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 <script>
   $(document).ready(function () {
-
     var urlCriar = '{% url "servico_criar" %}';
 
-    // EDITAR SERVIÇO
+    // Editar
     $(document).on('click', '.btn-editar-servico', function () {
-
       var id = $(this).data('id');
-
       $('#modalServicoLabel').text('Editar Serviço');
       $('#formServico').attr('action', '/servicos/' + id + '/editar/');
-
       $('input[name="nome"]').val($(this).data('nome'));
       $('textarea[name="descricao"]').val($(this).data('descricao'));
       $('input[name="valor_base"]').val($(this).data('valor'));
       $('input[name="incremento_tempo"]').val($(this).data('tempo'));
-
-      // checkbox ativo
-      $('input[name="ativo"]').prop('checked', $(this).data('ativo'));
-
+      $('input[name="ativo"]').prop('checked', String($(this).data('ativo')) === '1');
     });
 
-    // DELETAR SERVIÇO
+    // Deletar (genérico)
     $(document).on('click', '.btn-deletar', function () {
-
-      $('#deletarEntidade').text('Serviço');
+      $('#deletarEntidade').text($(this).data('entidade'));
       $('#deletarNome').text($(this).data('nome'));
       $('#formDeletar').attr('action', $(this).data('url'));
-
     });
 
-    // NOVO SERVIÇO (RESET MODAL)
-    $('#modalServico').on('show.bs.modal', function (e) {
+    // Inserir: reseta
+    $('[data-bs-target="#modalServico"]').not('.btn-editar-servico').on('click', function () {
+      $('#modalServicoLabel').text('Novo Serviço');
+      $('#formServico').attr('action', urlCriar);
+      $('#formServico')[0].reset();
+      $('input[name="ativo"]').prop('checked', true);
+    });
 
-      if (!$(e.relatedTarget).hasClass('btn-editar-servico')) {
-        $('#modalServicoLabel').text('Novo Serviço');
-        $('#formServico').attr('action', urlCriar);
-        $('#formServico').trigger('reset');
-
-        // garante checkbox marcado por padrão
-        $('input[name="ativo"]').prop('checked', true);
+    $('#tabela-servicos').DataTable({
+      pageLength: 10,
+      ordering: true,
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: {
+        search: "Pesquisar:",
+        lengthMenu: "Mostrar _MENU_ por página",
+        info: "Exibindo _START_ a _END_ de _TOTAL_ serviços",
+        infoEmpty: "Nenhum serviço encontrado",
+        infoFiltered: "(filtrado de _MAX_ total)",
+        zeroRecords: "Nenhum serviço encontrado",
+        emptyTable: "Nenhum serviço cadastrado.",
+        paginate: { first: "Primeiro", last: "Último", next: "Próximo", previous: "Anterior" }
       }
-
     });
-
   });
 </script>
 {% endblock %}

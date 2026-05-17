@@ -9,10 +9,10 @@ class Agenda(models.Model):
         ('cancelado', 'Cancelado'),
     ]
 
-    os = models.ForeignKey(
+    os = models.OneToOneField(
         'OrdemServico',
         on_delete=models.CASCADE,
-        related_name='agendamentos',
+        related_name='agenda',
         verbose_name='Ordem de Serviço',
     )
     lavador = models.ForeignKey(

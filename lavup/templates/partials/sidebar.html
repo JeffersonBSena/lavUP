@@ -1,12 +1,18 @@
+{% with tipo=request.session.lavup_usuario_tipo %}
 <aside class="sidebar bg-dark text-white">
   <nav class="nav flex-column pt-3">
     <a class="nav-link sidebar-link" href="{% url 'dashboard' %}">
       <i class="bi bi-speedometer2 me-2"></i> Dashboard
     </a>
+    <a class="nav-link sidebar-link" href="{% url 'lavador_main' %}">
+      <i class="bi bi-droplet-half me-2"></i> Painel do Lavador
+    </a>
+
+    {% if tipo == 'admin' %}
     <a class="nav-link sidebar-link" href="{% url 'agenda' %}">
       <i class="bi bi-calendar-check me-2"></i> Agenda
     </a>
-    <a class="nav-link sidebar-link" href="#os">
+    <a class="nav-link sidebar-link" href="{% url 'ordens' %}">
       <i class="bi bi-clipboard-check me-2"></i> Ordens de Serviço
     </a>
     <a class="nav-link sidebar-link" href="{% url 'clientes' %}">
@@ -27,5 +33,7 @@
     <a class="nav-link sidebar-link" href="{% url 'configuracoes' %}">
       <i class="bi bi-gear me-2"></i> Configurações
     </a>
+    {% endif %}
   </nav>
 </aside>
+{% endwith %}

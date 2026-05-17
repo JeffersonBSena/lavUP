@@ -53,7 +53,7 @@ class OrdemServicoServico(models.Model):
         related_name='ordens_servico',
         verbose_name='Serviço',
     )
-    valor_aplicado = models.CharField(max_length=20, verbose_name='Valor Aplicado')
+    valor_aplicado = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Valor Aplicado')
     tempo_aplicado = models.IntegerField(verbose_name='Tempo Aplicado (min)')
 
     class Meta:

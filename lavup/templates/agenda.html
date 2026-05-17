@@ -2,138 +2,132 @@
 
 {% block title %}Agenda - {{ APP_NAME }}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
 {% block content %}
 
 <div id="agenda" class="mb-5">
-  <h2 class="mb-4">
-    <i class="bi bi-calendar-check me-2"></i>
-    Agenda
-  </h2>
+  <h2 class="mb-4"><i class="bi bi-calendar-check me-2"></i>Agenda</h2>
 
   <div class="mb-3">
-    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgenda">
-      Inserir
-    </button>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgenda">Inserir</button>
   </div>
 
   {% include 'partials/form_agenda.html' %}
-  {% include 'partials/modal_deletar.html'%}
+  {% include 'partials/modal_deletar.html' %}
 
-  <table id="tabela-agenda" class="table table-striped table-hover">
+  <div class="table-responsive">
+    <table id="tabela-agenda" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Início</th>
+          <th>OS</th>
+          <th>Cliente</th>
+          <th>Lavador</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
 
-    <thead>
-      <tr>
-        <th>Início</th>
-        <th>OS</th>
-        <th>Lavador</th>
-        <th>Status</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
+      <tbody>
+        {% for agendamento in agendamentos %}
+        <tr>
+          <td>{{ agendamento.inicio_previsto|date:"d/m/Y H:i" }}</td>
+          <td>OS #{{ agendamento.os.id }}</td>
+          <td>{{ agendamento.os.cliente.nome }}</td>
+          <td>{{ agendamento.lavador.nome }}</td>
+          <td>
+            <span class="badge
+              {% if agendamento.status == 'agendado' %}bg-primary
+              {% elif agendamento.status == 'iniciado' %}bg-warning text-dark
+              {% elif agendamento.status == 'concluido' %}bg-success
+              {% else %}bg-secondary{% endif %}">
+              {{ agendamento.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-warning btn-sm btn-editar-agenda"
+              data-id="{{ agendamento.id }}"
+              data-os="{{ agendamento.os.id }}"
+              data-lavador="{{ agendamento.lavador.id }}"
+              data-inicio="{{ agendamento.inicio_previsto|date:'Y-m-d\\TH:i' }}"
+              data-fim="{{ agendamento.fim_previsto|date:'Y-m-d\\TH:i' }}"
+              data-status="{{ agendamento.status }}"
+              data-motivo="{{ agendamento.motivo_cancelamento|default:'' }}"
+              data-url="{% url 'agenda_editar' agendamento.id %}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalAgenda">Editar</button>
 
-    <tbody>
-      {% for agendamento in agendamentos %}
-      <tr>
-        <td>{{ agendamento.inicio_previsto|date:"d/m/Y H:i"}}</td>
-        <td>OS #{{ agendamento.os.id }}</td>
-        <td>{{ agendamento.lavador.nome}}</td>
-        <td>
-          <span class="badge
-            {% if agendamento.status == 'agendado' %}bg-primary
-            {% elif agendamento.status == 'iniciado' %}bg-warning text-dark
-            {% elif agendamento.status == 'concluido' %}bg-success
-            {% else %}bg-secondary{% endif %}">
-            {{ agendamento.get_status_display }}
-          </span>
-        </td>
-
-        <td>
-          <button class="btn btn-warning btn-sm btn-editar-agenda" data-id="{{ agendamento.id }}"
-            data-os="{{ agendamento.os.id }}" data-lavador="{{ agendamento.lavador.id }}"
-            data-inicio="{{ agendamento.inicio_previsto|date:'Y-m-d\\TH:i' }}"
-            data-fim="{{ agendamento.fim_previsto|date:'Y-m-d\\TH:i' }}" data-status="{{ agendamento.status }}"
-            data-bs-toggle="modal" data-bs-target="#modalAgenda">
-            Editar
-          </button>
-
-          <button class="btn btn-danger btn-sm btn-deletar" data-id="{{ agendamento.id }}"
-            data-nome="Agenda #{{ agendamento.id }}" data-url="/agenda/{{ agendamento.id }}/deletar/">
-            Deletar
-          </button>
-        </td>
-      </tr>
-      {% empty %}
-
-      <tr>
-        <td colspan="5" class="text-center text-muted">Nenhum agendamento encontrado.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+            <button class="btn btn-danger btn-sm btn-deletar"
+              data-url="{% url 'agenda_deletar' agendamento.id %}"
+              data-entidade="o agendamento"
+              data-nome="Agenda #{{ agendamento.id }}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalDeletar">Deletar</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 <script>
   $(document).ready(function () {
-
     var urlCriar = '{% url "agenda_criar" %}';
 
-    // EDITAR
+    // Editar
     $(document).on('click', '.btn-editar-agenda', function () {
-
-      $('#formAgenda')[0].reset(); // 🔥 evita lixo de valores anteriores
-
+      $('#formAgenda')[0].reset();
       $('#modalAgendaLabel').text('Editar Agenda');
       $('#formAgenda').attr('action', $(this).data('url'));
-
       $('select[name="os"]').val($(this).data('os'));
       $('select[name="lavador"]').val($(this).data('lavador'));
       $('select[name="status"]').val($(this).data('status'));
-
       $('input[name="inicio_previsto"]').val($(this).data('inicio'));
       $('input[name="fim_previsto"]').val($(this).data('fim'));
-
+      $('textarea[name="motivo_cancelamento"]').val($(this).data('motivo'));
     });
 
-    // DELETAR
+    // Deletar (genérico)
     $(document).on('click', '.btn-deletar', function () {
-
-      $('#deletarEntidade').text('Agenda');
+      $('#deletarEntidade').text($(this).data('entidade'));
       $('#deletarNome').text($(this).data('nome'));
       $('#formDeletar').attr('action', $(this).data('url'));
-
     });
 
-    // ABRIR MODAL
-    $('#modalAgenda').on('show.bs.modal', function (e) {
-
-      const trigger = e.relatedTarget;
-      const isEdit = trigger && $(trigger).hasClass('btn-editar-agenda');
-
-      if (!isEdit) {
-
-        $('#modalAgendaLabel').text('Nova Agenda');
-        $('#formAgenda').attr('action', urlCriar);
-
-        $('select[name="status"]').val('agendado');
-      }
-
-    });
-
-    // FECHAR MODAL
-    $('#modalAgenda').on('hidden.bs.modal', function () {
-
-      if ($('#formAgenda').length) {
-        $('#formAgenda')[0].reset();
-      }
-
+    // Inserir: reseta modal
+    $('[data-bs-target="#modalAgenda"]').not('.btn-editar-agenda').on('click', function () {
       $('#modalAgendaLabel').text('Nova Agenda');
       $('#formAgenda').attr('action', urlCriar);
-
+      $('#formAgenda')[0].reset();
+      $('select[name="status"]').val('agendado');
     });
 
+    $('#tabela-agenda').DataTable({
+      pageLength: 10,
+      ordering: true,
+      order: [[0, 'desc']],
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: {
+        search: "Pesquisar:",
+        lengthMenu: "Mostrar _MENU_ por página",
+        info: "Exibindo _START_ a _END_ de _TOTAL_ agendamentos",
+        infoEmpty: "Nenhum agendamento encontrado",
+        infoFiltered: "(filtrado de _MAX_ total)",
+        zeroRecords: "Nenhum agendamento encontrado",
+        emptyTable: "Nenhum agendamento encontrado.",
+        paginate: { first: "Primeiro", last: "Último", next: "Próximo", previous: "Anterior" }
+      }
+    });
   });
 </script>
 {% endblock %}

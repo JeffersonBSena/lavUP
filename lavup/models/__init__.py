@@ -7,3 +7,4 @@ from .servico import Servico
 from .ordem_servico import OrdemServico, OrdemServicoServico
 from .agenda import Agenda
 from .codigo_verificacao import CodigoVerificacao, BloqueioLogin
+from .mensagem import Mensagem

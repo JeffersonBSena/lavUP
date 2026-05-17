@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Ordens de Serviço - {{ APP_NAME }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
+{% block content %}
+
+<div id="os" class="mb-5">
+  <h2 class="mb-4"><i class="bi bi-clipboard-check me-2"></i>Ordens de Serviço</h2>
+
+  <div class="mb-3">
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalOS">Inserir</button>
+  </div>
+
+  {% include 'partials/form_os.html' %}
+  {% include 'partials/modal_deletar.html' %}
+
+  <div class="table-responsive">
+    <table id="tabela-os" class="table table-striped">
+      <thead>
+        <tr>
+          <th>OS</th>
+          <th>Cliente</th>
+          <th>Veículo / Placa</th>
+          <th>Lavador</th>
+          <th>Início</th>
+          <th>Serviços</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for o in ordens %}
+        <tr>
+          <td>#{{ o.id }}</td>
+          <td>{{ o.cliente.nome }}</td>
+          <td>{{ o.veiculo.fabricante.nome }} {{ o.veiculo.modelo }}<br><small class="text-muted">{{ o.placa_veiculo }}</small></td>
+          <td>{{ o.agenda.lavador.nome|default:"—" }}</td>
+          <td>{{ o.agenda.inicio_previsto|date:"d/m/Y H:i"|default:"—" }}</td>
+          <td>
+            {% for s in o.servicos.all %}
+              <span class="badge bg-secondary">{{ s.servico.nome }}</span>
+            {% empty %}—{% endfor %}
+          </td>
+          <td>
+            <span class="badge
+              {% if o.status == 'aberta' %}bg-info
+              {% elif o.status == 'iniciada' %}bg-warning text-dark
+              {% elif o.status == 'agendada' %}bg-primary
+              {% elif o.status == 'concluida' %}bg-success
+              {% else %}bg-secondary{% endif %}">
+              {{ o.get_status_display }}
+            </span>
+          </td>
+          <td>
+            {% if o.status == 'concluida' or o.status == 'cancelada' %}
+              <span class="text-muted small"><i class="bi bi-lock me-1"></i>Histórica</span>
+            {% else %}
+              <button class="btn btn-warning btn-sm btn-editar-os"
+                data-id="{{ o.id }}"
+                data-cliente="{{ o.cliente.id }}"
+                data-veiculo="{{ o.veiculo.id }}"
+                data-placa="{{ o.placa_veiculo }}"
+                data-status="{{ o.status }}"
+                data-observacoes="{{ o.observacoes|default:'' }}"
+                data-bs-toggle="modal"
+                data-bs-target="#modalOSEditar">Editar</button>
+
+              <button class="btn btn-danger btn-sm btn-deletar"
+                data-url="{% url 'os_deletar' o.id %}"
+                data-entidade="a OS"
+                data-nome="OS #{{ o.id }}"
+                data-bs-toggle="modal"
+                data-bs-target="#modalDeletar">Deletar</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal de edição simplificada (sem mexer em itens/agenda) -->
+<div class="modal fade" id="modalOSEditar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formOSEditar" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Editar OS</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Cliente</label>
+            <select class="form-select" name="cliente" required>
+              {% for c in clientes %}<option value="{{ c.id }}">{{ c.nome }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Veículo</label>
+            <select class="form-select" name="veiculo" required>
+              {% for v in veiculos %}<option value="{{ v.id }}">{{ v.fabricante.nome }} {{ v.modelo }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Placa</label>
+            <input type="text" class="form-control" name="placa_veiculo" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status">
+              <option value="aberta">Aberta</option>
+              <option value="iniciada">Iniciada</option>
+              <option value="agendada">Agendada</option>
+            </select>
+            <div class="form-text">Para concluir ou cancelar, use o Painel do Lavador.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Observações</label>
+            <textarea class="form-control" name="observacoes" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+<script>
+  $(document).ready(function () {
+    // Toggle Fila / Agendamento
+    function aplicarTipo() {
+      var tipo = $('input[name="tipo"]:checked').val();
+      var $data = $('#osDataGroup');
+      var $inp = $data.find('input[name="inicio_previsto"]');
+      if (tipo === 'agendamento') {
+        $data.removeClass('d-none');
+        $inp.attr('required', true);
+      } else {
+        $data.addClass('d-none');
+        $inp.removeAttr('required').val('');
+      }
+    }
+    $('input[name="tipo"]').on('change', aplicarTipo);
+
+    // Soma tempo/valor dos serviços marcados
+    function recalcularTotais() {
+      var t = 0, v = 0;
+      $('input[name="servicos"]:checked').each(function () {
+        t += parseInt($(this).data('tempo'), 10) || 0;
+        v += parseFloat($(this).data('valor')) || 0;
+      });
+      $('#osTempoTotal').text(t + ' min');
+      $('#osValorTotal').text('R$ ' + v.toFixed(2).replace('.', ','));
+    }
+    $(document).on('change', 'input[name="servicos"]', recalcularTotais);
+
+    // Editar OS
+    $(document).on('click', '.btn-editar-os', function () {
+      var id = $(this).data('id');
+      $('#formOSEditar').attr('action', '/os/' + id + '/editar/');
+      $('#formOSEditar select[name="cliente"]').val($(this).data('cliente'));
+      $('#formOSEditar select[name="veiculo"]').val($(this).data('veiculo'));
+      $('#formOSEditar input[name="placa_veiculo"]').val($(this).data('placa'));
+      $('#formOSEditar select[name="status"]').val($(this).data('status'));
+      $('#formOSEditar textarea[name="observacoes"]').val($(this).data('observacoes'));
+    });
+
+    // Deletar genérico
+    $(document).on('click', '.btn-deletar', function () {
+      $('#deletarEntidade').text($(this).data('entidade'));
+      $('#deletarNome').text($(this).data('nome'));
+      $('#formDeletar').attr('action', $(this).data('url'));
+    });
+
+    // Reset modal Inserir
+    $('[data-bs-target="#modalOS"]').not('.btn-editar-os').on('click', function () {
+      $('#formOS')[0].reset();
+      $('#tipoFila').prop('checked', true);
+      aplicarTipo();
+      recalcularTotais();
+    });
+
+    $('#tabela-os').DataTable({
+      pageLength: 10,
+      ordering: true,
+      order: [[0, 'desc']],
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: {
+        search: "Pesquisar:",
+        lengthMenu: "Mostrar _MENU_ por página",
+        info: "Exibindo _START_ a _END_ de _TOTAL_ OS",
+        infoEmpty: "Nenhuma OS encontrada",
+        infoFiltered: "(filtrado de _MAX_ total)",
+        zeroRecords: "Nenhuma OS encontrada",
+        emptyTable: "Nenhuma OS cadastrada.",
+        paginate: { first: "Primeiro", last: "Último", next: "Próximo", previous: "Anterior" }
+      }
+    });
+  });
+</script>
+{% endblock %}

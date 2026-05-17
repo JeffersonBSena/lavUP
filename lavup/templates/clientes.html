@@ -2,63 +2,56 @@
 
 {% block title %}Clientes - {{ APP_NAME }}{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
 {% block content %}
 
 <div id="clientes" class="mb-5">
+  <h2 class="mb-4"><i class="bi bi-people me-2"></i>Clientes</h2>
 
-  <h2 class="mb-4">
-    <i class="bi bi-people me-2"></i>
-    Clientes
-  </h2>
-
-  <!--botão inserir-->
   <div class="mb-3">
-    <button class="btn btn-primary btn-sm"
-      data-bs-toogle="modal"
-      data-bs-traget="#modalCliente">
-      Inserir
-    </button>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCliente">Inserir</button>
   </div>
 
   {% include 'partials/form_cliente.html' %}
   {% include 'partials/modal_deletar.html' %}
- 
-  <!--Cards-->
-  <div class="row g-3">
-    {% for cliente in clientes %}
 
-    <div class="col-md-4">
-      <div class="card shadow-sm">
+  <div class="table-responsive">
+    <table id="tabela-clientes" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>WhatsApp</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
 
-        <div class="card-body">
-          <h5>{{ cliente.nome }}</h5>
-          <p>WhatsApp: {{ cliente.whatsapp|default:"Não Informado" }}</p>
+      <tbody>
+        {% for cliente in clientes %}
+        <tr>
+          <td>{{ cliente.nome }}</td>
+          <td>{{ cliente.whatsapp|default:"—" }}</td>
+          <td>
+            <button class="btn btn-warning btn-sm btn-editar-cliente"
+              data-id="{{ cliente.id }}"
+              data-nome="{{ cliente.nome }}"
+              data-whatsapp="{{ cliente.whatsapp|default:'' }}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCliente">Editar</button>
 
-          <!--botões-->
-          <button class="btn btn-warning btn-sm btn-editar-cliente"
-           data-id="{{ cliente.id }}"
-           data-nome="{{ cliente.nome }}"
-           data-whatsapp="{{ cliente.whatsapp }}"
-           data-url="/clientes/{{ cliente.id }}/editar/"
-           data-bs-toogle="modal"
-           data-bs-traget="#modalCliente">
-           Editar
-          </button>
-
-          <button class="btn btn-danger btn-sm btn-deletar"
-           data-id="{{ cliente.id }}"
-           data-nome="{{ cliente.nome }}"
-           data-url="/cliente/{{ cliente.id }}/deletar/">
-           Deletar
-          </button>
-
-        </div>
-      </div>
-    </div>
-    
-    {% empty %}
-    <p class="text-muted">Nenhum cliente cadastrado.</p>
-    {% endfor %}
+            <button class="btn btn-danger btn-sm btn-deletar"
+              data-url="{% url 'cliente_deletar' cliente.id %}"
+              data-entidade="o cliente"
+              data-nome="{{ cliente.nome }}"
+              data-bs-toggle="modal"
+              data-bs-target="#modalDeletar">Deletar</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -66,67 +59,50 @@
 
 {% block extra_js %}
 <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
-
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 <script>
-$(document).ready(function () {
+  $(document).ready(function () {
+    var urlCriar = '{% url "cliente_criar" %}';
 
-  const urlCriar = '{% url "cliente_criar" %}';
-  const $form = $('#formCliente');
-  const $modalLabel = $('#modalClienteLabel');
+    // Editar: preenche o modal
+    $(document).on('click', '.btn-editar-cliente', function () {
+      var id = $(this).data('id');
+      $('#modalClienteLabel').text('Editar Cliente');
+      $('#formCliente').attr('action', '/clientes/' + id + '/editar/');
+      $('input[name="nome"]').val($(this).data('nome'));
+      $('input[name="whatsapp"]').val($(this).data('whatsapp'));
+    });
 
-  // EDITAR CLIENTE
-  $(document).on('click', '.btn-editar-cliente', function () {
+    // Deletar: modal genérico
+    $(document).on('click', '.btn-deletar', function () {
+      $('#deletarEntidade').text($(this).data('entidade'));
+      $('#deletarNome').text($(this).data('nome'));
+      $('#formDeletar').attr('action', $(this).data('url'));
+    });
 
-    if ($form.length) {
-      $form[0].reset();
-    }
+    // Inserir: reseta modal
+    $('[data-bs-target="#modalCliente"]').not('.btn-editar-cliente').on('click', function () {
+      $('#modalClienteLabel').text('Novo Cliente');
+      $('#formCliente').attr('action', urlCriar);
+      $('#formCliente')[0].reset();
+    });
 
-    $modalLabel.text('Editar Cliente');
-    $form.attr('action', $(this).data('url'));
-
-    $('input[name="nome"]').val($(this).data('nome'));
-    $('input[name="whatsapp"]').val($(this).data('whatsapp'));
-
-  });
-
-  // DELETAR CLIENTE
-  $(document).on('click', '.btn-deletar', function () {
-
-    $('#deletarEntidade').text('Cliente');
-    $('#deletarNome').text($(this).data('nome'));
-    $('#formDeletar').attr('action', $(this).data('url'));
-
-  });
-
-  // ABRIR MODAL
-  $('#modalCliente').on('show.bs.modal', function (e) {
-
-    const isEdit = e.relatedTarget && $(e.relatedTarget).hasClass('btn-editar-cliente');
-
-    if (!isEdit) {
-
-      if ($form.length) {
-        $form[0].reset();
+    $('#tabela-clientes').DataTable({
+      pageLength: 10,
+      ordering: true,
+      columnDefs: [{ orderable: false, searchable: false, targets: -1 }],
+      language: {
+        search: "Pesquisar:",
+        lengthMenu: "Mostrar _MENU_ por página",
+        info: "Exibindo _START_ a _END_ de _TOTAL_ clientes",
+        infoEmpty: "Nenhum cliente encontrado",
+        infoFiltered: "(filtrado de _MAX_ total)",
+        zeroRecords: "Nenhum cliente encontrado",
+        emptyTable: "Nenhum cliente cadastrado.",
+        paginate: { first: "Primeiro", last: "Último", next: "Próximo", previous: "Anterior" }
       }
-
-      $modalLabel.text('Novo Cliente');
-      $form.attr('action', urlCriar);
-    }
-
+    });
   });
-
-  // FECHAR MODAL
-  $('#modalCliente').on('hidden.bs.modal', function () {
-
-    if ($form.length) {
-      $form[0].reset();
-    }
-
-    $modalLabel.text('Novo Cliente');
-    $form.attr('action', urlCriar);
-
-  });
-
-});
 </script>
 {% endblock %}

@@ -1,0 +1,51 @@
+slug,titulo,descricao,placeholders,corpo
+codigo_verificacao,Código de Verificação 2FA,Código de acesso enviado no login,"codigo,minutos","*LavUP - Código de Acesso*
+
+Seu código de verificação é:
+
+*{codigo}*
+
+Este código expira em {minutos} minutos.
+Se você não solicitou este código, entre em contato com o Administrador principal urgentemente."
+boas_vindas,Boas-vindas ao novo cliente,Mensagem de boas-vindas após cadastro do cliente,nome,"*LavUP - Olá, {nome}!* 🚿
+
+Seu cadastro foi realizado com sucesso. Agora você faz parte da nossa lista de clientes!
+
+*Como funciona:*
+*1.* Sempre que você for atendido, abriremos uma *Ordem de Serviço* com os serviços contratados.
+*2.* Você receberá um aviso aqui no WhatsApp em cada etapa importante:
+   • Agendamento confirmado (data, horário e serviços)
+   • Reagendamento
+   • Cancelamento
+   • Lavagem concluída (avisamos quando o veículo estiver pronto)
+*3.* Caso precise reagendar ou tirar dúvidas, é só responder esta mensagem.
+
+Obrigado pela preferência! 🙌"
+os_criada,Ordem de Serviço criada,Notificação de abertura de OS,"numero_os,servicos","*LavUP - Ordem de Serviço #{numero_os}*
+
+Sua OS foi aberta com os seguintes serviços:
+{servicos}
+
+Acompanhe o status pelo sistema."
+os_concluida,Ordem de Serviço concluída,Notificação de conclusão de OS,numero_os,"*LavUP - OS #{numero_os} Concluída*
+
+Seu veículo está pronto! Pode retirá-lo quando quiser.
+Obrigado pela preferência!"
+agendamento_confirmado,Agendamento confirmado,Confirmação de novo agendamento ou reagendamento,"data,horario,servicos","*LavUP - Agendamento Confirmado*
+
+Data: {data}
+Horário: {horario}
+Serviços: {servicos}
+
+Aguardamos você!"
+agendamento_cancelado,Agendamento cancelado,Notificação de cancelamento de agendamento,"data,horario","*LavUP - Agendamento Cancelado*
+
+Seu agendamento de {data} às {horario} foi cancelado.
+Para reagendar, acesse o sistema."
+lembrete_agendamento,Lembrete de agendamento,Lembrete enviado próximo ao horário,"data,horario","*LavUP - Lembrete*
+
+Não esqueça do seu agendamento!
+Data: {data}
+Horário: {horario}
+
+Aguardamos você!"

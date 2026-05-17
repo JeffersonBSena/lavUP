@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>LavUP — Arquitetura de Mensageria</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --primary: #6c2bd9;
+    --accent: #25d366;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #6c2bd9 0%, #9b3cff 100%);
+    color: white;
+    padding: 32px 48px;
+  }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: -0.5px; }
+  header p  { margin: 6px 0 0; opacity: 0.9; }
+  main {
+    padding: 32px 48px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.04);
+  }
+  section h2 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 20px;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 8px;
+    display: inline-block;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .dot {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  pre.snippet {
+    background: #1e1e2f;
+    color: #f8f8f2;
+    padding: 14px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  pre.snippet .k { color: #ff79c6; }
+  pre.snippet .s { color: #f1fa8c; }
+  pre.snippet .c { color: #6272a4; font-style: italic; }
+  pre.snippet .f { color: #50fa7b; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  th { background: #faf7ff; color: var(--primary); }
+  code.inline {
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #6c2bd9;
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 24px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LavUP — Arquitetura de Mensageria</h1>
+  <p>Templates persistidos no banco · disparo via Evolution API (WhatsApp)</p>
+</header>
+
+<main>
+
+  <!-- ========== 1. DIAGRAMA DE CLASSES ========== -->
+  <section>
+    <h2>1. Diagrama de classes (UML)</h2>
+    <p>Visão estática dos componentes que participam do envio de mensagens.</p>
+    <div class="mermaid">
+classDiagram
+    direction LR
+
+    class Mensagem {
+        +int id
+        +string slug
+        +string titulo
+        +string corpo
+        +string descricao
+        +string placeholders
+        +bool ativo
+        +datetime created_at
+        +datetime updated_at
+        +render() string
+    }
+
+    class MensagemService {
+        +render(slug) string
+        +enviar(slug, phone) dict
+        +enviar_codigo_verificacao(phone, codigo) dict
+        +enviar_boas_vindas(phone, nome) dict
+        +enviar_os_criada(phone, numero_os, servicos) dict
+        +enviar_os_concluida(phone, numero_os) dict
+        +enviar_agendamento_confirmado(phone, data, horario, servicos) dict
+        +enviar_agendamento_cancelado(phone, data, horario) dict
+        +enviar_lembrete_agendamento(phone, data, horario) dict
+    }
+
+    class EvolutionAPI {
+        -string base_url
+        -string token
+        -string instance
+        -bool enabled
+        +send_text(phone, message) dict
+        -_format_phone(phone) string
+    }
+
+    class AuthView {
+        +login_identify(request)
+        +login_verify(request)
+    }
+
+    class CodigoVerificacao {
+        +int id
+        +string codigo
+        +datetime expira_em
+        +int tentativas
+    }
+
+    class WhatsApp
+
+    AuthView ..> MensagemService : enviar_codigo_verificacao
+    MensagemService ..> Mensagem : busca por slug
+    MensagemService ..> EvolutionAPI : delega send_text
+    AuthView ..> CodigoVerificacao : cria e valida
+    EvolutionAPI ..> WhatsApp : HTTP POST sendText
+    </div>
+
+    <div class="legend">
+      <span><span class="dot" style="background:#6c2bd9"></span>Modelo persistido</span>
+      <span><span class="dot" style="background:#1e88e5"></span>Service / View</span>
+      <span><span class="dot" style="background:#25d366"></span>Sistema externo</span>
+    </div>
+  </section>
+
+  <!-- ========== 2. DIAGRAMA DE SEQUÊNCIA ========== -->
+  <section>
+    <h2>2. Sequência de envio — exemplo: agendamento confirmado</h2>
+    <p>Fluxo dinâmico desde o gatilho de negócio até a entrega no WhatsApp do cliente.</p>
+    <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as View
+    participant S as MensagemService
+    participant DB as Tabela mensagens
+    participant E as EvolutionAPI
+    participant W as WhatsApp Cloud
+
+    U->>S: enviar slug phone dados
+    S->>DB: SELECT por slug ativo
+    DB-->>S: Mensagem corpo
+    S->>S: corpo format dados
+    S->>E: send_text phone texto
+    E->>E: format_phone phone
+    E->>W: POST sendText INSTANCE
+    W-->>E: 200 OK PENDING
+    E-->>S: dict resposta
+    S-->>U: dict resposta
+    Note over U,W: Cliente recebe no WhatsApp
+    </div>
+  </section>
+
+  <!-- ========== 3. CATÁLOGO DE TEMPLATES ========== -->
+  <section>
+    <h2>3. Catálogo de templates (tabela <code class="inline">mensagens</code>)</h2>
+    <p>7 mensagens já populadas via <code class="inline">python manage.py seed_mensagens</code>.</p>
+    <table>
+      <thead>
+        <tr><th>slug</th><th>Título</th><th>Placeholders</th><th>Quando dispara</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code class="inline">codigo_verificacao</code></td><td>Código de Verificação 2FA</td><td>codigo, minutos</td><td>Login (2FA)</td></tr>
+        <tr><td><code class="inline">boas_vindas</code></td><td>Boas-vindas ao novo usuário</td><td>nome</td><td>Cadastro de usuário</td></tr>
+        <tr><td><code class="inline">os_criada</code></td><td>Ordem de Serviço criada</td><td>numero_os, servicos</td><td>Abertura de OS</td></tr>
+        <tr><td><code class="inline">os_concluida</code></td><td>Ordem de Serviço concluída</td><td>numero_os</td><td>Fechamento da OS</td></tr>
+        <tr><td><code class="inline">agendamento_confirmado</code></td><td>Agendamento confirmado</td><td>data, horario, servicos</td><td>Criação / reagendamento</td></tr>
+        <tr><td><code class="inline">agendamento_cancelado</code></td><td>Agendamento cancelado</td><td>data, horario</td><td>Cancelamento</td></tr>
+        <tr><td><code class="inline">lembrete_agendamento</code></td><td>Lembrete de agendamento</td><td>data, horario</td><td>Job recorrente (próximo do horário)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ========== 4. EXEMPLO DE USO ========== -->
+  <section>
+    <h2>4. Como o código consome</h2>
+    <div class="grid-2">
+      <div>
+        <h3 style="margin-top:0;color:var(--muted);font-size:14px;text-transform:uppercase;">API genérica (recomendada)</h3>
+<pre class="snippet"><span class="k">from</span> lavup.services.mensagens <span class="k">import</span> MensagemService
+
+<span class="c"># Reagendamento confirmado</span>
+MensagemService.<span class="f">enviar</span>(
+    <span class="s">'agendamento_confirmado'</span>,
+    cliente.whatsapp,
+    data=<span class="s">'09/05'</span>,
+    horario=<span class="s">'14:00'</span>,
+    servicos=<span class="s">'Lavagem + Cera'</span>,
+)</pre>
+      </div>
+      <div>
+        <h3 style="margin-top:0;color:var(--muted);font-size:14px;text-transform:uppercase;">Wrapper compatível (legado)</h3>
+<pre class="snippet"><span class="k">from</span> lavup.services.mensagens <span class="k">import</span> MensagemService
+
+<span class="c"># Mantido para auth/views existentes</span>
+MensagemService.<span class="f">enviar_codigo_verificacao</span>(
+    usuario.whatsapp,
+    codigo.codigo,
+)</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 5. CHAMADA HTTP CRUA ========== -->
+  <section>
+    <h2>5. Sob o capô — chamada HTTP feita pelo <code class="inline">EvolutionAPI.send_text</code></h2>
+<pre class="snippet">POST <span class="s">https://zapi.devnativo.com.br/message/sendText/NAVI%20Tecnologia</span>
+Content-Type: application/json
+apikey: ••••••••
+
+{
+  <span class="s">"number"</span>: <span class="s">"5592985668008"</span>,
+  <span class="s">"text"</span>: <span class="s">"*LavUP - Agendamento Confirmado*\n\nData: 09/05\nHorário: 14:00\n…"</span>
+}</pre>
+  </section>
+
+</main>
+
+<footer>
+  LavUP · Arquitetura de mensageria · Mermaid.js · gerado em 2026-05-08
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: {
+      primaryColor: '#f3eaff',
+      primaryBorderColor: '#6c2bd9',
+      primaryTextColor: '#1f2937',
+      lineColor: '#6c2bd9',
+      secondaryColor: '#e8f5e9',
+      tertiaryColor: '#fff8e1'
+    },
+    classDiagram: { useMaxWidth: true },
+    sequence: { useMaxWidth: true, mirrorActors: false }
+  });
+</script>
+
+</body>
+</html>

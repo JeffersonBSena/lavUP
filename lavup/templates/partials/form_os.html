@@ -1,0 +1,117 @@
+<div class="modal fade" id="modalOS" tabindex="-1" aria-labelledby="modalOSLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <form id="formOS" method="post" action="{% url 'os_criar' %}">
+        {% csrf_token %}
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalOSLabel">Nova Ordem de Serviço</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+
+        <div class="modal-body">
+
+          <!-- Tipo: fila / agendamento -->
+          <div class="mb-3" id="osTipoGroup">
+            <label class="form-label fw-bold">Tipo de atendimento</label>
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="tipo" id="tipoFila" value="fila" autocomplete="off" checked>
+              <label class="btn btn-outline-primary" for="tipoFila">
+                <i class="bi bi-lightning-charge me-1"></i> Fila (cliente no local agora)
+              </label>
+
+              <input type="radio" class="btn-check" name="tipo" id="tipoAgenda" value="agendamento" autocomplete="off">
+              <label class="btn btn-outline-primary" for="tipoAgenda">
+                <i class="bi bi-calendar-event me-1"></i> Agendamento futuro
+              </label>
+            </div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label">Cliente</label>
+              <select class="form-select" name="cliente" required>
+                <option value="">Selecione...</option>
+                {% for cliente in clientes %}
+                <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Veículo</label>
+              <select class="form-select" id="osVeiculo" name="veiculo" required>
+                <option value="">Selecione...</option>
+                {% for v in veiculos %}
+                <option value="{{ v.id }}">{{ v.fabricante.nome }} {{ v.modelo }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3 mt-2">
+            <label class="form-label">Placa</label>
+            <input type="text" class="form-control" name="placa_veiculo" placeholder="ABC-1D23" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Lavador</label>
+            <select class="form-select" name="lavador" required>
+              <option value="">Selecione...</option>
+              {% for l in lavadores %}
+              <option value="{{ l.id }}">{{ l.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Agendamento futuro: data inicial -->
+          <div class="mb-3 d-none" id="osDataGroup">
+            <label class="form-label">Início Previsto</label>
+            <input type="datetime-local" class="form-control" name="inicio_previsto">
+            <div class="form-text">O fim previsto é calculado automaticamente pela soma dos tempos dos serviços.</div>
+          </div>
+
+          <!-- Serviços (N:N) -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Serviços</label>
+            <div class="row g-2">
+              {% for s in servicos_disponiveis %}
+              <div class="col-md-6">
+                <label class="border rounded p-2 d-flex gap-2 align-items-start mb-0 w-100" for="srv{{ s.id }}" style="cursor:pointer;">
+                  <input class="form-check-input m-0 mt-1 flex-shrink-0" type="checkbox" name="servicos"
+                         value="{{ s.id }}" id="srv{{ s.id }}"
+                         data-tempo="{{ s.incremento_tempo }}"
+                         data-valor="{{ s.valor_base }}">
+                  <span class="flex-grow-1">
+                    <strong>{{ s.nome }}</strong><br>
+                    <small class="text-muted">R$ {{ s.valor_base }} · {{ s.incremento_tempo }} min</small>
+                  </span>
+                </label>
+              </div>
+              {% empty %}
+              <div class="col-12 text-muted">Nenhum serviço ativo cadastrado.</div>
+              {% endfor %}
+            </div>
+            <div class="mt-2 small">
+              <span class="me-3">Total tempo: <strong id="osTempoTotal">0 min</strong></span>
+              <span>Total valor: <strong id="osValorTotal">R$ 0,00</strong></span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Observações</label>
+            <textarea class="form-control" name="observacoes" rows="2"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

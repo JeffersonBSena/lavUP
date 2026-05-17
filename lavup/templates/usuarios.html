@@ -45,7 +45,8 @@
           <button class="btn btn-danger btn-sm btn-deletar"
             data-id="{{ usuario.id }}"
             data-nome="{{ usuario.nome }}"
-            data-url="/usuarios/{{ usuario.id }}/deletar/">
+            data-url="{% url 'usuario_deletar' usuario.id %}"
+            data-bs-toggle="modal" data-bs-target="#modalDeletar">
             Deletar
           </button>
         </td>

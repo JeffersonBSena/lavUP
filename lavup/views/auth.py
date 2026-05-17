@@ -191,11 +191,48 @@ def logout_view(request):
 
 
 def dashboard(request):
-    """Página inicial após login."""
-    from lavup.models.veiculo import Veiculo
-    context = {
-        'veiculos_total': Veiculo.objects.count(),
-    }
+    """Página inicial após login.
+
+    Admin: visão completa.
+    Lavador: agenda do dia restrita a si próprio + counts próprios.
+    """
+    from lavup.models import Veiculo, Cliente, OrdemServico, Agenda
+
+    tipo = request.session.get('lavup_usuario_tipo')
+    usuario_id = request.session.get('lavup_usuario_id')
+
+    hoje = timezone.localdate()
+    inicio_dia = timezone.make_aware(timezone.datetime.combine(hoje, timezone.datetime.min.time()))
+    fim_dia = timezone.make_aware(timezone.datetime.combine(hoje, timezone.datetime.max.time()))
+
+    agendamentos_hoje_qs = (
+        Agenda.objects
+        .select_related('lavador', 'os__cliente', 'os__veiculo__fabricante')
+        .filter(inicio_previsto__range=(inicio_dia, fim_dia))
+        .exclude(status='cancelado')
+        .order_by('inicio_previsto')
+    )
+
+    if tipo == 'lavador':
+        agendamentos_hoje_qs = agendamentos_hoje_qs.filter(lavador_id=usuario_id)
+        os_abertas_qs = OrdemServico.objects.filter(
+            agenda__lavador_id=usuario_id
+        ).exclude(status__in=['concluida', 'cancelada'])
+        context = {
+            'is_lavador_view': True,
+            'agendamentos_hoje': agendamentos_hoje_qs.count(),
+            'os_abertas': os_abertas_qs.count(),
+            'agenda_hoje': agendamentos_hoje_qs,
+        }
+    else:
+        context = {
+            'is_lavador_view': False,
+            'agendamentos_hoje': agendamentos_hoje_qs.count(),
+            'os_abertas': OrdemServico.objects.exclude(status__in=['concluida', 'cancelada']).count(),
+            'clientes_total': Cliente.objects.count(),
+            'veiculos_total': Veiculo.objects.count(),
+            'agenda_hoje': agendamentos_hoje_qs,
+        }
     return render(request, 'dashboard.html', context)
 
 
